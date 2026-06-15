@@ -33,18 +33,20 @@ def display_page():
 
     <head>
 
+        <title>Digital Signage</title>
+
         <style>
 
             body {
-                margin:0;
-                background:black;
-                overflow:hidden;
+                margin: 0;
+                background: black;
+                overflow: hidden;
             }
 
             img {
-                width:100vw;
-                height:100vh;
-                object-fit:contain;
+                width: 100vw;
+                height: 100vh;
+                object-fit: contain;
             }
 
         </style>
@@ -57,30 +59,47 @@ def display_page():
 
         <script>
 
-            const ads = [
-                "/media/demo2.png",
-                "/media/demo3.png",
-                "/media/demo4.png"
-                "/media/newdemo1.png",
-                "/media/newdemo2.png",
-            ];
+            let ads = [];
+            let current = 0;
 
-            let index = 0;
+            async function loadAds() {
 
-            const image = document.getElementById("ad");
+                const response =
+                    await fetch("/ads");
+
+                const data =
+                    await response.json();
+
+                ads = data.ads;
+
+                if (ads.length > 0) {
+                    showAd();
+                }
+            }
 
             function showAd() {
 
-                image.src =
-                    ads[index] + "?t=" + Date.now();
+                const img =
+                    document.getElementById("ad");
 
-                index =
-                    (index + 1) % ads.length;
+                img.src =
+                    ads[current] + "?t=" + Date.now();
+
+                current =
+                    (current + 1) % ads.length;
             }
 
-            showAd();
+            setInterval(() => {
 
-            setInterval(showAd,3000);
+                if (ads.length > 0) {
+                    showAd();
+                }
+
+            }, 10000);
+
+            loadAds();
+
+            setInterval(loadAds, 30000);
 
         </script>
 
@@ -109,3 +128,19 @@ async def upload_image(file: UploadFile = File(...)):
 @app.get("/current-ad")
 def get_current_ad():
     return current_ad
+
+@app.get("/ads")
+def get_ads():
+
+    files = []
+
+    for file in os.listdir(MEDIA_FOLDER):
+
+        if file.lower().endswith(
+            (".png", ".jpg", ".jpeg", ".webp")
+        ):
+            files.append(f"/media/{file}")
+
+    return {
+        "ads": files
+    }
