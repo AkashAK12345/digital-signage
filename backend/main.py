@@ -58,7 +58,8 @@ def display_page():
         <script>
 
             const ads = [
-                "/media/demo.png",
+                "/media/newdemo1.png",
+                "/media/newdemo2.png",
                 "/media/demo2.png",
                 "/media/demo3.png",
                 "/media/demo4.png"
