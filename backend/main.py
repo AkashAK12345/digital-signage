@@ -95,7 +95,7 @@ def display_page():
                     showAd();
                 }
 
-            }, 10000);
+            }, 3000);
 
             loadAds();
 
