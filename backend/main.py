@@ -58,11 +58,11 @@ def display_page():
         <script>
 
             const ads = [
-                "/media/newdemo1.png",
-                "/media/newdemo2.png",
                 "/media/demo2.png",
                 "/media/demo3.png",
                 "/media/demo4.png"
+                "/media/newdemo1.png",
+                "/media/newdemo2.png",
             ];
 
             let index = 0;
