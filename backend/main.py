@@ -1,8 +1,9 @@
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import HTMLResponse
 import shutil
 import os
-from fastapi.responses import HTMLResponse
+import uuid
 
 app = FastAPI(
     title="Digital Signage API"
@@ -12,11 +13,30 @@ MEDIA_FOLDER = "media"
 
 os.makedirs(MEDIA_FOLDER, exist_ok=True)
 
-app.mount("/media", StaticFiles(directory="media"), name="media")
+app.mount(
+    "/media",
+    StaticFiles(directory=MEDIA_FOLDER),
+    name="media"
+)
 
-current_ad = {
-    "image": None
-}
+IMAGE_EXTENSIONS = (
+    ".png",
+    ".jpg",
+    ".jpeg",
+    ".webp"
+)
+
+VIDEO_EXTENSIONS = (
+    ".mp4",
+    ".webm",
+    ".mov"
+)
+
+ALLOWED_EXTENSIONS = (
+    IMAGE_EXTENSIONS +
+    VIDEO_EXTENSIONS
+)
+
 
 @app.get("/")
 def home():
@@ -29,40 +49,56 @@ def home():
 def display_page():
 
     return """
-    <html>
+<!DOCTYPE html>
+<html>
 
-    <head>
+<head>
 
-        <title>Digital Signage</title>
+    <title>Digital Signage</title>
 
-        <style>
+    <style>
 
-            body {
-                margin: 0;
-                background: black;
-                overflow: hidden;
-            }
+        body {
+            margin: 0;
+            background: black;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+        }
 
-            img {
-                width: 100vw;
-                height: 100vh;
-                object-fit: contain;
-            }
+        img,
+        video {
+            width: 100vw;
+            height: 100vh;
+            object-fit: contain;
+            display: none;
+            background: black;
+        }
 
-        </style>
+    </style>
 
-    </head>
+</head>
 
-    <body>
+<body>
 
-        <img id="ad">
+    <img id="imagePlayer">
 
-        <script>
+    <video
+        id="videoPlayer"
+        autoplay
+        muted
+        playsinline>
+    </video>
 
-            let ads = [];
-            let current = 0;
+    <script>
 
-            async function loadAds() {
+        let ads = [];
+        let currentIndex = 0;
+        let imageTimer = null;
+
+        async function loadAds() {
+
+            try {
 
                 const response =
                     await fetch("/ads");
@@ -72,75 +108,268 @@ def display_page():
 
                 ads = data.ads;
 
-                if (ads.length > 0) {
-                    showAd();
-                }
-            }
-
-            function showAd() {
-
-                const img =
-                    document.getElementById("ad");
-
-                img.src =
-                    ads[current] + "?t=" + Date.now();
-
-                current =
-                    (current + 1) % ads.length;
-            }
-
-            setInterval(() => {
-
-                if (ads.length > 0) {
-                    showAd();
+                if (
+                    currentIndex >= ads.length
+                ) {
+                    currentIndex = 0;
                 }
 
-            }, 3000);
+            } catch (error) {
 
-            loadAds();
+                console.error(
+                    "Error loading ads:",
+                    error
+                );
 
-            setInterval(loadAds, 30000);
+            }
+        }
 
-        </script>
+        function playNext() {
 
-    </body>
+            if (ads.length === 0) {
+                return;
+            }
 
-    </html>
+            const item =
+                ads[currentIndex];
+
+            currentIndex =
+                (currentIndex + 1)
+                % ads.length;
+
+            const image =
+                document.getElementById(
+                    "imagePlayer"
+                );
+
+            const video =
+                document.getElementById(
+                    "videoPlayer"
+                );
+
+            image.style.display = "none";
+            video.style.display = "none";
+
+            if (imageTimer) {
+                clearTimeout(imageTimer);
+            }
+
+            const mediaUrl =
+                item.url +
+                "?t=" +
+                Date.now();
+
+            if (
+                item.type === "image"
+            ) {
+
+                image.src =
+                    mediaUrl;
+
+                image.style.display =
+                    "block";
+
+                imageTimer =
+                    setTimeout(
+                        playNext,
+                        item.duration || 10000
+                    );
+
+            }
+            else if (
+                item.type === "video"
+            ) {
+
+                video.src =
+                    mediaUrl;
+
+                video.style.display =
+                    "block";
+
+                video.load();
+
+                video.play()
+                    .catch(error => {
+                        console.error(error);
+                        playNext();
+                    });
+
+            }
+        }
+
+        document
+            .getElementById(
+                "videoPlayer"
+            )
+            .addEventListener(
+                "ended",
+                playNext
+            );
+
+        async function start() {
+
+            await loadAds();
+
+            if (
+                ads.length > 0
+            ) {
+                playNext();
+            }
+
+            setInterval(
+                loadAds,
+                30000
+            );
+        }
+
+        start();
+
+    </script>
+
+</body>
+
+</html>
     """
 
 
 @app.post("/upload")
-async def upload_image(file: UploadFile = File(...)):
-    
-    file_path = f"{MEDIA_FOLDER}/{file.filename}"
+async def upload_media(
+    file: UploadFile = File(...)
+):
 
-    with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
+    extension = os.path.splitext(
+        file.filename
+    )[1].lower()
 
-    current_ad["image"] = file.filename
+    if extension not in ALLOWED_EXTENSIONS:
+
+        raise HTTPException(
+            status_code=400,
+            detail="Unsupported file type"
+        )
+
+    original_name = os.path.splitext(
+        file.filename
+    )[0]
+
+    safe_name = (
+        original_name
+        .replace(" ", "_")
+        .replace("/", "_")
+        .replace("\\", "_")
+    )
+
+    unique_filename = (
+        f"{safe_name}_"
+        f"{uuid.uuid4().hex[:8]}"
+        f"{extension}"
+    )
+
+    file_path = os.path.join(
+        MEDIA_FOLDER,
+        unique_filename
+    )
+
+    with open(
+        file_path,
+        "wb"
+    ) as buffer:
+
+        shutil.copyfileobj(
+            file.file,
+            buffer
+        )
 
     return {
-        "message": "Uploaded successfully",
-        "file": file.filename
+        "message":
+            "Uploaded successfully",
+        "original_name":
+            file.filename,
+        "saved_as":
+            unique_filename
     }
 
 
-@app.get("/current-ad")
-def get_current_ad():
-    return current_ad
+@app.delete("/delete/{filename}")
+def delete_media(filename: str):
+
+    file_path = os.path.join(
+        MEDIA_FOLDER,
+        filename
+    )
+
+    if not os.path.exists(
+        file_path
+    ):
+        raise HTTPException(
+            status_code=404,
+            detail="File not found"
+        )
+
+    os.remove(file_path)
+
+    return {
+        "message":
+            "File deleted",
+        "file":
+            filename
+    }
+
 
 @app.get("/ads")
 def get_ads():
 
-    files = []
+    ads = []
 
-    for file in os.listdir(MEDIA_FOLDER):
+    files = sorted(
+        os.listdir(
+            MEDIA_FOLDER
+        )
+    )
 
-        if file.lower().endswith(
-            (".png", ".jpg", ".jpeg", ".webp")
-        ):
-            files.append(f"/media/{file}")
+    for file in files:
+
+        extension = os.path.splitext(
+            file
+        )[1].lower()
+
+        if extension in IMAGE_EXTENSIONS:
+
+            ads.append({
+                "url":
+                    f"/media/{file}",
+                "type":
+                    "image",
+                "duration":
+                    3000
+            })
+
+        elif extension in VIDEO_EXTENSIONS:
+
+            ads.append({
+                "url":
+                    f"/media/{file}",
+                "type":
+                    "video"
+            })
 
     return {
-        "ads": files
+        "ads": ads
+    }
+
+
+@app.get("/current-ad")
+def current_ad():
+
+    ads = get_ads()["ads"]
+
+    if len(ads) == 0:
+
+        return {
+            "current_ad": None
+        }
+
+    return {
+        "current_ad":
+            ads[0]
     }
