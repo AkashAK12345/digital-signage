@@ -373,3 +373,4 @@ def current_ad():
         "current_ad":
             ads[0]
     }
+    # auto deploy test
