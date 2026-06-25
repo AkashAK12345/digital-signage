@@ -4,10 +4,20 @@ from fastapi.responses import HTMLResponse
 import shutil
 import os
 import uuid
+from app.routers.device_router import router as device_router
+from app.routers.media_router import router as media_router
+from app.routers.playlist_router import router as playlist_router
+from app.routers.device_playlist_router import (
+    router as device_playlist_router
+)
 
 app = FastAPI(
     title="Digital Signage API"
 )
+app.include_router(device_router)
+app.include_router(media_router)
+app.include_router(playlist_router)
+app.include_router(device_playlist_router)
 
 MEDIA_FOLDER = "media"
 
@@ -373,4 +383,4 @@ def current_ad():
         "current_ad":
             ads[0]
     }
-    # auto deploy test
+    
