@@ -1,5 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
-
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Box } from "@mui/material";
 import { useSnackbar } from "notistack";
 
@@ -10,32 +9,35 @@ import DeviceTable from "../../components/devices/DeviceTable";
 import DeviceFormDialog from "../../components/devices/DeviceFormDialog";
 import ConfirmDialog from "../../components/common/ConfirmDialog";
 
-import { devices as seedDevices } from "../../data/devices";
-import {
-  exportDevicesCsv,
-  hasActiveFilters,
-  sortDevices,
-} from "../../components/devices/utils";
+import { DeviceService } from "../../services/DeviceService";
+import { exportDevicesCsv, hasActiveFilters, sortDevices } from "../../components/devices/utils";
 
 import type { Device } from "../../types/device";
-import type {
-  DeviceFormValues,
-  LocationFilter,
-  SortDirection,
-  SortField,
-  StatusFilter,
-} from "../../components/devices/types";
-
-// ---------------------------------------------------------------------------
-// DevicesPage — orchestrates state and composes reusable device components.
-// ---------------------------------------------------------------------------
+import type { DeviceFormValues, LocationFilter, SortDirection, SortField, StatusFilter } from "../../components/devices/types";
 
 export default function DevicesPage() {
   const { enqueueSnackbar } = useSnackbar();
 
   // ── Device data ──────────────────────────────────────────────────────────
-  const [devices, setDevices] = useState<Device[]>(seedDevices);
+  const [devices, setDevices] = useState<Device[]>([]);
+  const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  useEffect(() => {
+    fetchDevices();
+  }, []);
+
+  const fetchDevices = async () => {
+    try {
+      setLoading(true);
+      const data = await DeviceService.getDevices();
+      setDevices(data);
+    } catch (error) {
+      enqueueSnackbar("Failed to load devices", { variant: "error" });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // ── Filter state ─────────────────────────────────────────────────────────
   const [search, setSearch] = useState("");
@@ -49,28 +51,15 @@ export default function DevicesPage() {
   // ── Form dialog state ────────────────────────────────────────────────────
   const [formOpen, setFormOpen] = useState(false);
   const [formMode, setFormMode] = useState<"add" | "edit">("add");
-  const [formInitial, setFormInitial] = useState<
-    DeviceFormValues | undefined
-  >(undefined);
+  const [formInitial, setFormInitial] = useState<DeviceFormValues | undefined>(undefined);
 
   // ── Delete dialog state ──────────────────────────────────────────────────
   const [deleteTarget, setDeleteTarget] = useState<Device | null>(null);
 
   // ── Derived data ─────────────────────────────────────────────────────────
-  const onlineCount = useMemo(
-    () => devices.filter((d) => d.status === "Online").length,
-    [devices],
-  );
-
-  const offlineCount = useMemo(
-    () => devices.filter((d) => d.status === "Offline").length,
-    [devices],
-  );
-
-  const uniqueLocations = useMemo(
-    () => [...new Set(devices.map((d) => d.location))].sort(),
-    [devices],
-  );
+  const onlineCount = useMemo(() => devices.filter((d) => d.status === "Online").length, [devices]);
+  const offlineCount = useMemo(() => devices.filter((d) => d.status === "Offline").length, [devices]);
+  const uniqueLocations = useMemo(() => [...new Set(devices.map((d) => d.location))].sort(), [devices]);
 
   const filtersActive = hasActiveFilters(search, statusFilter, locationFilter);
 
@@ -79,44 +68,26 @@ export default function DevicesPage() {
 
     if (search.trim()) {
       const q = search.trim().toLowerCase();
-      result = result.filter(
-        (d) =>
-          d.name.toLowerCase().includes(q) ||
-          d.id.toLowerCase().includes(q) ||
-          d.location.toLowerCase().includes(q),
-      );
+      result = result.filter((d) => d.name.toLowerCase().includes(q) || d.id.toLowerCase().includes(q) || d.location.toLowerCase().includes(q));
     }
 
-    if (statusFilter !== "All") {
-      result = result.filter((d) => d.status === statusFilter);
-    }
-
-    if (locationFilter !== "All") {
-      result = result.filter((d) => d.location === locationFilter);
-    }
+    if (statusFilter !== "All") result = result.filter((d) => d.status === statusFilter);
+    if (locationFilter !== "All") result = result.filter((d) => d.location === locationFilter);
 
     return sortDevices(result, sortField, sortDirection);
   }, [devices, search, statusFilter, locationFilter, sortField, sortDirection]);
 
   // ── Handlers ─────────────────────────────────────────────────────────────
+  const handleSort = useCallback((field: SortField) => {
+    setSortDirection((prev) => (sortField === field ? (prev === "asc" ? "desc" : "asc") : "asc"));
+    setSortField(field);
+  }, [sortField]);
 
-  const handleSort = useCallback(
-    (field: SortField) => {
-      setSortDirection((prev) =>
-        sortField === field ? (prev === "asc" ? "desc" : "asc") : "asc",
-      );
-      setSortField(field);
-    },
-    [sortField],
-  );
-
-  const handleRefresh = useCallback(() => {
+  const handleRefresh = useCallback(async () => {
     setRefreshing(true);
-    // Simulate network delay
-    setTimeout(() => {
-      setRefreshing(false);
-      enqueueSnackbar("Devices refreshed", { variant: "success" });
-    }, 800);
+    await fetchDevices();
+    setRefreshing(false);
+    enqueueSnackbar("Devices refreshed", { variant: "success" });
   }, [enqueueSnackbar]);
 
   const handleExport = useCallback(() => {
@@ -136,16 +107,12 @@ export default function DevicesPage() {
     setSearch("");
   }, []);
 
-  const handleCopyId = useCallback(
-    (id: string) => {
-      navigator.clipboard.writeText(id);
-      enqueueSnackbar("Device ID copied to clipboard", { variant: "info" });
-    },
-    [enqueueSnackbar],
-  );
+  const handleCopyId = useCallback((id: string) => {
+    navigator.clipboard.writeText(id);
+    enqueueSnackbar("Device ID copied to clipboard", { variant: "info" });
+  }, [enqueueSnackbar]);
 
   // ── Add / Edit ───────────────────────────────────────────────────────────
-
   const handleAddDevice = useCallback(() => {
     setFormMode("add");
     setFormInitial(undefined);
@@ -154,125 +121,58 @@ export default function DevicesPage() {
 
   const handleEditDevice = useCallback((device: Device) => {
     setFormMode("edit");
-    setFormInitial({
-      id: device.id,
-      name: device.name,
-      location: device.location,
-      status: device.status,
-      resolution: device.resolution,
-    });
+    setFormInitial({ id: device.id, name: device.name, location: device.location, status: device.status, resolution: device.resolution });
     setFormOpen(true);
   }, []);
 
-  const handleFormSubmit = useCallback(
-    (values: DeviceFormValues) => {
+  const handleFormSubmit = useCallback(async (values: DeviceFormValues) => {
+    try {
       if (formMode === "add") {
-        const newDevice: Device = {
+        const newDevice = await DeviceService.createDevice({
           ...values,
           lastSeen: "Just now",
           lastSeenMs: Date.now(),
-        };
+        });
         setDevices((prev) => [newDevice, ...prev]);
-        enqueueSnackbar(`Device "${values.name}" added`, {
-          variant: "success",
-        });
+        enqueueSnackbar(`Device "${values.name}" added`, { variant: "success" });
       } else {
-        setDevices((prev) =>
-          prev.map((d) => (d.id === values.id ? { ...d, ...values } : d)),
-        );
-        enqueueSnackbar(`Device "${values.name}" updated`, {
-          variant: "success",
-        });
+        const updatedDevice = await DeviceService.updateDevice(values.id!, values);
+        setDevices((prev) => prev.map((d) => (d.id === updatedDevice.id ? updatedDevice : d)));
+        enqueueSnackbar(`Device "${values.name}" updated`, { variant: "success" });
       }
       setFormOpen(false);
-    },
-    [formMode, enqueueSnackbar],
-  );
+    } catch (err) {
+      enqueueSnackbar("Failed to save device", { variant: "error" });
+    }
+  }, [formMode, enqueueSnackbar]);
 
   // ── Delete ───────────────────────────────────────────────────────────────
-
   const handleDeleteDevice = useCallback((device: Device) => {
     setDeleteTarget(device);
   }, []);
 
-  const handleConfirmDelete = useCallback(() => {
+  const handleConfirmDelete = useCallback(async () => {
     if (!deleteTarget) return;
-    setDevices((prev) => prev.filter((d) => d.id !== deleteTarget.id));
-    enqueueSnackbar(`Device "${deleteTarget.name}" deleted`, {
-      variant: "success",
-    });
-    setDeleteTarget(null);
+    try {
+      await DeviceService.deleteDevice(deleteTarget.id);
+      setDevices((prev) => prev.filter((d) => d.id !== deleteTarget.id));
+      enqueueSnackbar(`Device "${deleteTarget.name}" deleted`, { variant: "success" });
+    } catch (err) {
+      enqueueSnackbar("Failed to delete device", { variant: "error" });
+    } finally {
+      setDeleteTarget(null);
+    }
   }, [deleteTarget, enqueueSnackbar]);
 
   // ── Render ───────────────────────────────────────────────────────────────
-
   return (
     <Box>
-      <DevicePageHero
-        totalDevices={devices.length}
-        onlineCount={onlineCount}
-        onAddDevice={handleAddDevice}
-        onExport={handleExport}
-        onRefresh={handleRefresh}
-        refreshing={refreshing}
-      />
-
-      <DeviceStatsRow
-        total={devices.length}
-        online={onlineCount}
-        offline={offlineCount}
-        locations={uniqueLocations.length}
-        onStatClick={handleStatClick}
-      />
-
-      <DeviceFiltersBar
-        search={search}
-        statusFilter={statusFilter}
-        locationFilter={locationFilter}
-        locations={uniqueLocations}
-        resultCount={filteredDevices.length}
-        hasActiveFilters={filtersActive}
-        refreshing={refreshing}
-        onSearchChange={setSearch}
-        onStatusFilterChange={setStatusFilter}
-        onLocationFilterChange={setLocationFilter}
-        onClearFilters={handleClearFilters}
-        onRefresh={handleRefresh}
-      />
-
-      <DeviceTable
-        devices={filteredDevices}
-        totalCount={devices.length}
-        hasActiveFilters={filtersActive}
-        onEdit={handleEditDevice}
-        onDelete={handleDeleteDevice}
-        onAddDevice={handleAddDevice}
-        onClearFilters={handleClearFilters}
-        onCopyId={handleCopyId}
-        sortField={sortField}
-        sortDirection={sortDirection}
-        onSort={handleSort}
-      />
-
-      <DeviceFormDialog
-        open={formOpen}
-        mode={formMode}
-        initialValues={formInitial}
-        onClose={() => setFormOpen(false)}
-        onSubmit={handleFormSubmit}
-      />
-
-      <ConfirmDialog
-        open={!!deleteTarget}
-        title="Delete Device"
-        message={
-          deleteTarget
-            ? `Are you sure you want to delete "${deleteTarget.name}"? This action cannot be undone and the device will need to be re-registered.`
-            : ""
-        }
-        onConfirm={handleConfirmDelete}
-        onClose={() => setDeleteTarget(null)}
-      />
+      <DevicePageHero totalDevices={devices.length} onlineCount={onlineCount} onAddDevice={handleAddDevice} onExport={handleExport} onRefresh={handleRefresh} refreshing={refreshing} />
+      <DeviceStatsRow total={devices.length} online={onlineCount} offline={offlineCount} locations={uniqueLocations.length} onStatClick={handleStatClick} loading={loading} />
+      <DeviceFiltersBar search={search} statusFilter={statusFilter} locationFilter={locationFilter} locations={uniqueLocations} resultCount={filteredDevices.length} hasActiveFilters={filtersActive} refreshing={refreshing} onSearchChange={setSearch} onStatusFilterChange={setStatusFilter} onLocationFilterChange={setLocationFilter} onClearFilters={handleClearFilters} onRefresh={handleRefresh} />
+      <DeviceTable devices={filteredDevices} totalCount={devices.length} hasActiveFilters={filtersActive} onEdit={handleEditDevice} onDelete={handleDeleteDevice} onAddDevice={handleAddDevice} onClearFilters={handleClearFilters} onCopyId={handleCopyId} sortField={sortField} sortDirection={sortDirection} onSort={handleSort} loading={loading} />
+      <DeviceFormDialog open={formOpen} mode={formMode} initialValues={formInitial} onClose={() => setFormOpen(false)} onSubmit={handleFormSubmit} />
+      <ConfirmDialog open={!!deleteTarget} title="Delete Device" message={deleteTarget ? `Are you sure you want to delete "${deleteTarget.name}"? This action cannot be undone and the device will need to be re-registered.` : ""} onConfirm={handleConfirmDelete} onClose={() => setDeleteTarget(null)} />
     </Box>
   );
 }

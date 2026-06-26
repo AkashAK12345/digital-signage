@@ -15,16 +15,17 @@ import {
 } from "@mui/material";
 import TvRoundedIcon from "@mui/icons-material/TvRounded";
 
-import { devices } from "../../data/devices";
+import type { Device } from "../../types/device";
 
 interface Props {
   open: boolean;
+  devices: Device[];
   initialAssignedIds: string[];
   onClose: () => void;
   onSave: (ids: string[]) => void;
 }
 
-export default function AssignDevicesDialog({ open, initialAssignedIds, onClose, onSave }: Props) {
+export default function AssignDevicesDialog({ open, devices, initialAssignedIds, onClose, onSave }: Props) {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   useEffect(() => {

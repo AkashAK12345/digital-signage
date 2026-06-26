@@ -9,11 +9,11 @@ import TvRoundedIcon from "@mui/icons-material/TvRounded";
 import ScheduleRoundedIcon from "@mui/icons-material/ScheduleRounded";
 
 import type { Playlist, PlaylistStatus } from "../../types/playlist";
+import type { MediaItem } from "../../types/media";
 import { formatDuration } from "./utils";
 import EmptyState from "../common/EmptyState";
-import { mediaItems } from "../../data/media"; // Mock import to resolve thumbnails
-
 interface Props {
+  mediaItems: MediaItem[];
   playlists: Playlist[];
   loading?: boolean;
   hasActiveFilters?: boolean;
@@ -32,11 +32,13 @@ const statusColors: Record<PlaylistStatus, { bg: string; text: string; border: s
 
 function PlaylistCard({
   playlist,
+  mediaItems,
   onEdit,
   onPreview,
   onDelete,
 }: {
   playlist: Playlist;
+  mediaItems: MediaItem[];
   onEdit: (playlist: Playlist) => void;
   onPreview: (playlist: Playlist) => void;
   onDelete: (playlist: Playlist) => void;
@@ -190,6 +192,7 @@ function PlaylistCard({
 
 export default function PlaylistGrid({
   playlists,
+  mediaItems,
   loading = false,
   hasActiveFilters = false,
   onEdit,
@@ -232,7 +235,7 @@ export default function PlaylistGrid({
     <Grid container spacing={3}>
       {playlists.map((playlist) => (
         <Grid key={playlist.id} size={{ xs: 12, sm: 6, lg: 4 }}>
-          <PlaylistCard playlist={playlist} onEdit={onEdit} onPreview={onPreview} onDelete={onDelete} />
+          <PlaylistCard playlist={playlist} mediaItems={mediaItems} onEdit={onEdit} onPreview={onPreview} onDelete={onDelete} />
         </Grid>
       ))}
     </Grid>

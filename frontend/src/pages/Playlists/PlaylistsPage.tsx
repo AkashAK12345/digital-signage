@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { Box } from "@mui/material";
 import { useSnackbar } from "notistack";
 
@@ -11,19 +11,47 @@ import PlaylistPreviewDialog from "../../components/playlists/PlaylistPreviewDia
 import AssignDevicesDialog from "../../components/playlists/AssignDevicesDialog";
 import ConfirmDialog from "../../components/common/ConfirmDialog";
 
-import { playlists as seedPlaylists } from "../../data/playlists";
-import { mediaItems } from "../../data/media";
+import { PlaylistService } from "../../services/PlaylistService";
+import { MediaService } from "../../services/MediaService";
+import { DeviceService } from "../../services/DeviceService";
 import { hasActiveFilters, sortPlaylists } from "../../components/playlists/utils";
 
 import type { Playlist } from "../../types/playlist";
+import type { MediaItem } from "../../types/media";
+import type { Device } from "../../types/device";
 import type { StatusFilter, SortField, SortDirection } from "../../components/playlists/types";
 
 export default function PlaylistsPage() {
   const { enqueueSnackbar } = useSnackbar();
 
   // ── Data State ───────────────────────────────────────────────────────────
-  const [items, setItems] = useState<Playlist[]>(seedPlaylists);
+  const [items, setItems] = useState<Playlist[]>([]);
+  const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
+  const [devices, setDevices] = useState<Device[]>([]);
+  const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const [playlistsData, mediaData, devicesData] = await Promise.all([
+        PlaylistService.getPlaylists(),
+        MediaService.getMedia(),
+        DeviceService.getDevices(),
+      ]);
+      setItems(playlistsData);
+      setMediaItems(mediaData);
+      setDevices(devicesData);
+    } catch (error) {
+      enqueueSnackbar("Failed to load playlist data", { variant: "error" });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // ── Filter & Sort State ──────────────────────────────────────────────────
   const [search, setSearch] = useState("");
@@ -58,12 +86,11 @@ export default function PlaylistsPage() {
   }, [items, search, statusFilter, sortField, sortDirection]);
 
   // ── Handlers ─────────────────────────────────────────────────────────────
-  const handleRefresh = useCallback(() => {
+  const handleRefresh = useCallback(async () => {
     setRefreshing(true);
-    setTimeout(() => {
-      setRefreshing(false);
-      enqueueSnackbar("Playlists refreshed", { variant: "success" });
-    }, 800);
+    await fetchData();
+    setRefreshing(false);
+    enqueueSnackbar("Playlists refreshed", { variant: "success" });
   }, [enqueueSnackbar]);
 
   const handleClearFilters = useCallback(() => {
@@ -87,112 +114,63 @@ export default function PlaylistsPage() {
     setEditorOpen(true);
   }, []);
 
-  const handleSaveEditor = useCallback((playlist: Playlist) => {
-    setItems(prev => {
-      const idx = prev.findIndex(p => p.id === playlist.id);
-      if (idx >= 0) {
-        const copy = [...prev];
-        copy[idx] = playlist;
-        return copy;
+  const handleSaveEditor = useCallback(async (playlist: Playlist) => {
+    try {
+      const isExisting = items.some(p => p.id === playlist.id);
+      let savedPlaylist: Playlist;
+      
+      if (isExisting) {
+        savedPlaylist = await PlaylistService.updatePlaylist(playlist.id, playlist);
+        setItems(prev => prev.map(p => p.id === savedPlaylist.id ? savedPlaylist : p));
+      } else {
+        savedPlaylist = await PlaylistService.createPlaylist(playlist);
+        setItems(prev => [savedPlaylist, ...prev]);
       }
-      return [playlist, ...prev];
-    });
-    enqueueSnackbar(`Playlist "${playlist.name}" saved successfully`, { variant: "success" });
-    setEditorOpen(false);
-  }, [enqueueSnackbar]);
+      enqueueSnackbar(`Playlist "${savedPlaylist.name}" saved successfully`, { variant: "success" });
+      setEditorOpen(false);
+    } catch (err) {
+      enqueueSnackbar("Failed to save playlist", { variant: "error" });
+    }
+  }, [items, enqueueSnackbar]);
 
   // ── Delete Handlers ──────────────────────────────────────────────────────
-  const handleConfirmDelete = useCallback(() => {
+  const handleConfirmDelete = useCallback(async () => {
     if (!deleteTarget) return;
-    setItems(prev => prev.filter(i => i.id !== deleteTarget.id));
-    enqueueSnackbar(`Deleted "${deleteTarget.name}"`, { variant: "success" });
-    setDeleteTarget(null);
+    try {
+      await PlaylistService.deletePlaylist(deleteTarget.id);
+      setItems(prev => prev.filter(i => i.id !== deleteTarget.id));
+      enqueueSnackbar(`Deleted "${deleteTarget.name}"`, { variant: "success" });
+    } catch (err) {
+      enqueueSnackbar("Failed to delete playlist", { variant: "error" });
+    } finally {
+      setDeleteTarget(null);
+    }
   }, [deleteTarget, enqueueSnackbar]);
 
   // ── Assign Handlers ──────────────────────────────────────────────────────
-  const handleSaveAssignments = useCallback((deviceIds: string[]) => {
+  const handleSaveAssignments = useCallback(async (deviceIds: string[]) => {
     if (!assignTarget) return;
-    setItems(prev => {
-      const copy = [...prev];
-      const idx = copy.findIndex(p => p.id === assignTarget.id);
-      if (idx >= 0) copy[idx] = { ...copy[idx], assignedDeviceIds: deviceIds, updatedAt: Date.now() };
-      return copy;
-    });
-    enqueueSnackbar(`Updated device assignments for "${assignTarget.name}"`, { variant: "success" });
-    setAssignTarget(null);
+    try {
+      const updated = await PlaylistService.updatePlaylist(assignTarget.id, { assignedDeviceIds: deviceIds, updatedAt: Date.now() });
+      setItems(prev => prev.map(p => p.id === updated.id ? updated : p));
+      enqueueSnackbar(`Updated device assignments for "${assignTarget.name}"`, { variant: "success" });
+      setAssignTarget(null);
+    } catch (err) {
+      enqueueSnackbar("Failed to update assignments", { variant: "error" });
+    }
   }, [assignTarget, enqueueSnackbar]);
 
   return (
     <Box>
-      <PlaylistPageHero
-        totalPlaylists={items.length}
-        onCreate={handleCreate}
-        onRefresh={handleRefresh}
-        refreshing={refreshing}
-      />
-
-      <PlaylistStatsRow
-        total={items.length}
-        published={publishedCount}
-        draft={draftCount}
-        archived={archivedCount}
-        onStatClick={handleStatClick}
-      />
-
-      <PlaylistFiltersBar
-        search={search}
-        statusFilter={statusFilter}
-        sortField={sortField}
-        sortDirection={sortDirection}
-        resultCount={filteredItems.length}
-        refreshing={refreshing}
-        onSearchChange={setSearch}
-        onStatusFilterChange={setStatusFilter}
-        onSortChange={(field, dir) => { setSortField(field); setSortDirection(dir); }}
-        onClearFilters={handleClearFilters}
-        onRefresh={handleRefresh}
-      />
-
-      <PlaylistGrid
-        playlists={filteredItems}
-        hasActiveFilters={filtersActive}
-        onEdit={handleEdit}
-        onPreview={setPreviewTarget}
-        onDelete={setDeleteTarget}
-        onClearFilters={handleClearFilters}
-        onCreate={handleCreate}
-      />
-
-      {/* Overlays */}
-      <PlaylistEditor
-        open={editorOpen}
-        initialPlaylist={editorTarget}
-        mediaLibrary={mediaItems}
-        onClose={() => setEditorOpen(false)}
-        onSave={handleSaveEditor}
-      />
-
-      <PlaylistPreviewDialog
-        open={!!previewTarget}
-        items={previewTarget?.items || []}
-        mediaLibrary={mediaItems}
-        onClose={() => setPreviewTarget(null)}
-      />
-
-      <AssignDevicesDialog
-        open={!!assignTarget}
-        initialAssignedIds={assignTarget?.assignedDeviceIds || []}
-        onClose={() => setAssignTarget(null)}
-        onSave={handleSaveAssignments}
-      />
-
-      <ConfirmDialog
-        open={!!deleteTarget}
-        title="Delete Playlist"
-        message={deleteTarget ? `Are you sure you want to delete "${deleteTarget.name}"? This will not delete the underlying media files.` : ""}
-        onConfirm={handleConfirmDelete}
-        onClose={() => setDeleteTarget(null)}
-      />
+      <PlaylistPageHero totalPlaylists={items.length} onCreate={handleCreate} onRefresh={handleRefresh} refreshing={refreshing} />
+      <PlaylistStatsRow total={items.length} published={publishedCount} draft={draftCount} archived={archivedCount} onStatClick={handleStatClick} loading={loading} />
+      <PlaylistFiltersBar search={search} statusFilter={statusFilter} sortField={sortField} sortDirection={sortDirection} resultCount={filteredItems.length} refreshing={refreshing} onSearchChange={setSearch} onStatusFilterChange={setStatusFilter} onSortChange={(field, dir) => { setSortField(field); setSortDirection(dir); }} onClearFilters={handleClearFilters} onRefresh={handleRefresh} />
+      <PlaylistGrid playlists={filteredItems} mediaItems={mediaItems} loading={loading} hasActiveFilters={filtersActive} onEdit={handleEdit} onPreview={setPreviewTarget} onDelete={setDeleteTarget} onClearFilters={handleClearFilters} onCreate={handleCreate} />
+      
+      <PlaylistEditor open={editorOpen} initialPlaylist={editorTarget} mediaLibrary={mediaItems} onClose={() => setEditorOpen(false)} onSave={handleSaveEditor} />
+      <PlaylistPreviewDialog open={!!previewTarget} items={previewTarget?.items || []} mediaLibrary={mediaItems} onClose={() => setPreviewTarget(null)} />
+      <AssignDevicesDialog open={!!assignTarget} devices={devices} initialAssignedIds={assignTarget?.assignedDeviceIds || []} onClose={() => setAssignTarget(null)} onSave={handleSaveAssignments} />
+      <ConfirmDialog open={!!deleteTarget} title="Delete Playlist" message={deleteTarget ? `Are you sure you want to delete "${deleteTarget.name}"? This will not delete the underlying media files.` : ""} onConfirm={handleConfirmDelete} onClose={() => setDeleteTarget(null)} />
     </Box>
   );
 }
