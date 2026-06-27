@@ -1,32 +1,62 @@
 /**
- * A mock API client to simulate asynchronous backend requests.
- * It adds a synthetic delay to all requests.
- * Later, this file will be swapped out to use standard `fetch` or `axios` 
- * configured with the FastAPI base URL.
+ * API client to route requests between real FastAPI backend and mock fallback.
  */
 
 const LATENCY_MS = 600;
+const API_BASE = "http://localhost:8000";
+
+const isRealApi = (url: string) => {
+  return url.startsWith("/devices") || url.startsWith("/media") || url.startsWith("/playlists") || url.startsWith("/schedules");
+};
 
 export const apiClient = {
-  get: async <T>(_url: string, mockData: T): Promise<T> => {
+  get: async <T>(url: string, mockData: T): Promise<T> => {
+    if (isRealApi(url)) {
+      const res = await fetch(`${API_BASE}${url}`);
+      if (!res.ok) throw new Error(`GET ${url} failed`);
+      return res.json();
+    }
     return new Promise((resolve) => {
       setTimeout(() => resolve(mockData), LATENCY_MS);
     });
   },
   
-  post: async <T>(_url: string, mockData: T): Promise<T> => {
+  post: async <T>(url: string, mockData: T, body?: any): Promise<T> => {
+    if (isRealApi(url)) {
+      const res = await fetch(`${API_BASE}${url}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body || mockData),
+      });
+      if (!res.ok) throw new Error(`POST ${url} failed`);
+      return res.json();
+    }
     return new Promise((resolve) => {
       setTimeout(() => resolve(mockData), LATENCY_MS);
     });
   },
 
-  put: async <T>(_url: string, mockData: T): Promise<T> => {
+  put: async <T>(url: string, mockData: T, body?: any): Promise<T> => {
+    if (isRealApi(url)) {
+      const res = await fetch(`${API_BASE}${url}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body || mockData),
+      });
+      if (!res.ok) throw new Error(`PUT ${url} failed`);
+      return res.json();
+    }
     return new Promise((resolve) => {
       setTimeout(() => resolve(mockData), LATENCY_MS);
     });
   },
 
-  delete: async (_url: string): Promise<void> => {
+  delete: async (url: string): Promise<void> => {
+    if (isRealApi(url)) {
+      const res = await fetch(`${API_BASE}${url}`, { method: "DELETE" });
+      if (!res.ok) throw new Error(`DELETE ${url} failed`);
+      return;
+    }
     return new Promise((resolve) => {
       setTimeout(() => resolve(), LATENCY_MS);
     });

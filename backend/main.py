@@ -7,26 +7,38 @@ import uuid
 from app.routers.device_router import router as device_router
 from app.routers.media_router import router as media_router
 from app.routers.playlist_router import router as playlist_router
+from app.routers.schedule_router import router as schedule_router
 from app.routers.device_playlist_router import (
     router as device_playlist_router
 )
 
+from fastapi.middleware.cors import CORSMiddleware
+
 app = FastAPI(
     title="Digital Signage API"
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 app.include_router(device_router)
 app.include_router(media_router)
 app.include_router(playlist_router)
 app.include_router(device_playlist_router)
+app.include_router(schedule_router)
 
 MEDIA_FOLDER = "media"
 
 os.makedirs(MEDIA_FOLDER, exist_ok=True)
 
 app.mount(
-    "/media",
+    "/uploads",
     StaticFiles(directory=MEDIA_FOLDER),
-    name="media"
+    name="uploads"
 )
 
 IMAGE_EXTENSIONS = (
@@ -347,7 +359,7 @@ def get_ads():
 
             ads.append({
                 "url":
-                    f"/media/{file}",
+                    f"/uploads/{file}",
                 "type":
                     "image",
                 "duration":
@@ -358,7 +370,7 @@ def get_ads():
 
             ads.append({
                 "url":
-                    f"/media/{file}",
+                    f"/uploads/{file}",
                 "type":
                     "video"
             })

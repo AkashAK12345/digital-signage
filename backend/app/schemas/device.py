@@ -1,9 +1,59 @@
-# app/schemas/device.py
+from pydantic import BaseModel, ConfigDict
+from typing import Optional
 
-from pydantic import BaseModel
+class DeviceBase(BaseModel):
+    name: str
+    location: str
+    resolution: str
+    status: str
+    lastSeen: str
+    lastSeenMs: int
+    ipAddress: Optional[str] = None
+    storage: Optional[str] = None
+    
+    # New Heartbeat fields
+    heartbeatAt: Optional[int] = None
+    appVersion: Optional[str] = None
+    currentPlaylistId: Optional[str] = None
+    currentMediaId: Optional[str] = None
+    storageUsed: Optional[float] = None
+    storageTotal: Optional[float] = None
+    uptimeSeconds: Optional[int] = None
+    firmwareVersion: Optional[str] = None
 
-class DeviceCreate(BaseModel):
-    device_name: str
+class DeviceCreate(DeviceBase):
+    pass
+
+class DeviceUpdate(BaseModel):
+    name: Optional[str] = None
+    location: Optional[str] = None
+    resolution: Optional[str] = None
+    status: Optional[str] = None
+    lastSeen: Optional[str] = None
+    lastSeenMs: Optional[int] = None
+    ipAddress: Optional[str] = None
+    storage: Optional[str] = None
+
+class DeviceResponse(DeviceBase):
+    id: str
+
+    model_config = ConfigDict(from_attributes=True)
 
 class HeartbeatRequest(BaseModel):
-    device_id: str
+    deviceId: str
+    storageUsed: Optional[float] = None
+    storageTotal: Optional[float] = None
+    currentPlaylistId: Optional[str] = None
+    currentMediaId: Optional[str] = None
+    appVersion: Optional[str] = None
+    uptimeSeconds: Optional[int] = None
+    ipAddress: Optional[str] = None
+    firmwareVersion: Optional[str] = None
+
+class DeviceStatusResponse(BaseModel):
+    status: str
+    lastSeen: str
+    heartbeatAt: Optional[int] = None
+    storage: Optional[str] = None
+    currentPlaylistId: Optional[str] = None
+    currentMediaId: Optional[str] = None

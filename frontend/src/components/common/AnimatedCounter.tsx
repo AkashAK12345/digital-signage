@@ -1,5 +1,4 @@
 import { Typography } from "@mui/material";
-import CountUp from "react-countup";
 
 interface Props {
   value: number;
@@ -35,7 +34,7 @@ export default function AnimatedCounter({ value, loading = false }: Props) {
         fontVariantNumeric: "tabular-nums",
       }}
     >
-      <CountUp end={value} duration={1.2} separator="," preserveValue />
+      {value.toLocaleString()}
     </Typography>
   );
 }

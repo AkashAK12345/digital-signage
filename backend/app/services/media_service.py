@@ -1,115 +1,124 @@
 import os
 import shutil
 import uuid
+import time
+from typing import List
 
-from fastapi import UploadFile
+from fastapi import UploadFile, HTTPException
 from sqlalchemy.orm import Session
+from PIL import Image
 
 from app.models.media import Media
+from app.schemas.media import MediaUpdate
 
 
 class MediaService:
 
     MEDIA_FOLDER = "media"
-
-    IMAGE_EXTENSIONS = (
-        ".png",
-        ".jpg",
-        ".jpeg",
-        ".webp"
-    )
-
-    VIDEO_EXTENSIONS = (
-        ".mp4",
-        ".webm",
-        ".mov"
-    )
+    IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".webp", ".gif"}
+    VIDEO_EXTENSIONS = {".mp4", ".webm", ".mov"}
 
     @staticmethod
     def upload_media(
         file: UploadFile,
         db: Session
-    ):
+    ) -> Media:
 
-        extension = os.path.splitext(
-            file.filename
-        )[1].lower()
+        ext = os.path.splitext(file.filename)[1].lower()
+        if not ext:
+            ext = ".bin"
+        
+        if ext not in MediaService.IMAGE_EXTENSIONS and ext not in MediaService.VIDEO_EXTENSIONS:
+            raise HTTPException(status_code=400, detail=f"Unsupported file type: {ext}")
+            
+        file.file.seek(0, os.SEEK_END)
+        size = file.file.tell()
+        file.file.seek(0)
+        
+        if size == 0:
+            raise HTTPException(status_code=400, detail="File is empty")
+        
+        if size > 100 * 1024 * 1024:  # 100MB
+            raise HTTPException(status_code=400, detail="File is too large")
 
-        original_name = os.path.splitext(
-            file.filename
-        )[0]
-
-        safe_name = (
-            original_name
-            .replace(" ", "_")
-            .replace("/", "_")
-            .replace("\\", "_")
-        )
-
-        unique_filename = (
-            f"{safe_name}_{uuid.uuid4().hex[:8]}{extension}"
-        )
-
-        file_path = os.path.join(
-            MediaService.MEDIA_FOLDER,
-            unique_filename
-        )
-
+        safe_name = os.path.splitext(file.filename)[0].replace(" ", "_")
+        unique_filename = f"{safe_name}_{uuid.uuid4().hex[:8]}{ext}"
+        
+        os.makedirs(MediaService.MEDIA_FOLDER, exist_ok=True)
+        file_path = os.path.join(MediaService.MEDIA_FOLDER, unique_filename)
+        
         with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(
-                file.file,
-                buffer
-            )
-
-        media_type = (
-            "image"
-            if extension in MediaService.IMAGE_EXTENSIONS
-            else "video"
+            shutil.copyfileobj(file.file, buffer)
+            
+        dimensions = "Unknown"
+        media_type = "Image"
+        duration = None
+        
+        if ext in MediaService.IMAGE_EXTENSIONS:
+            media_type = "Image"
+            try:
+                with Image.open(file_path) as img:
+                    dimensions = f"{img.width}x{img.height}"
+            except Exception:
+                dimensions = "Unknown"
+        else:
+            media_type = "Video"
+            dimensions = "1920x1080"
+            duration = 120
+            
+        new_media = Media(
+            id=f"MEDIA-{uuid.uuid4().hex[:8].upper()}",
+            name=file.filename,
+            type=media_type,
+            category="Announcement",
+            thumbnail=f"http://localhost:8000/uploads/{unique_filename}",
+            originalFile=f"http://localhost:8000/uploads/{unique_filename}",
+            size=size,
+            dimensions=dimensions,
+            duration=duration,
+            uploadedAt=int(time.time() * 1000),
+            uploadedBy="Admin"
         )
-
-        media = Media(
-            filename=unique_filename,
-            original_name=file.filename,
-            media_type=media_type
-        )
-
-        db.add(media)
+        
+        db.add(new_media)
         db.commit()
-        db.refresh(media)
-
-        return media
+        db.refresh(new_media)
+        
+        return new_media
 
     @staticmethod
-    def get_all_media(
-        db: Session
-    ):
-
+    def get_all_media(db: Session) -> List[Media]:
         return db.query(Media).all()
 
     @staticmethod
-    def delete_media(
-        media_id: int,
-        db: Session
-    ):
+    def get_media(db: Session, media_id: str) -> Media:
+        return db.query(Media).filter(Media.id == media_id).first()
 
-        media = (
-            db.query(Media)
-            .filter(Media.id == media_id)
-            .first()
-        )
-
-        if media is None:
+    @staticmethod
+    def update_media(db: Session, media_id: str, payload: MediaUpdate) -> Media:
+        media = db.query(Media).filter(Media.id == media_id).first()
+        if not media:
             return None
+        
+        update_data = payload.model_dump(exclude_unset=True)
+        for key, value in update_data.items():
+            setattr(media, key, value)
+            
+        db.commit()
+        db.refresh(media)
+        return media
 
-        path = os.path.join(
-            MediaService.MEDIA_FOLDER,
-            media.filename
-        )
-
+    @staticmethod
+    def delete_media(db: Session, media_id: str) -> bool:
+        media = db.query(Media).filter(Media.id == media_id).first()
+        if not media:
+            return False
+            
+        file_name = media.originalFile.split("/")[-1]
+        path = os.path.join(MediaService.MEDIA_FOLDER, file_name)
         if os.path.exists(path):
             os.remove(path)
-
+            
         db.delete(media)
         db.commit()
-
-        return media
+        return True
