@@ -57,3 +57,17 @@ class DeviceStatusResponse(BaseModel):
     storage: Optional[str] = None
     currentPlaylistId: Optional[str] = None
     currentMediaId: Optional[str] = None
+
+class DeviceRegisterRequest(BaseModel):
+    name: str
+    resolution: str
+    ipAddress: Optional[str] = None
+    appVersion: Optional[str] = None
+    androidId: Optional[str] = None
+
+class DeviceRegisterResponse(BaseModel):
+    deviceId: str
+    deviceToken: str
+    heartbeatInterval: int = 60
+    syncInterval: int = 60
+    backendTime: str

@@ -15,3 +15,4 @@ class Media(Base):
     duration = Column(Integer, nullable=True)
     uploadedAt = Column(BigInteger, nullable=False)
     uploadedBy = Column(String, nullable=False)
+    checksum = Column(String, nullable=True)

@@ -1,0 +1,14 @@
+C:\Users\akash\OneDrive\Desktop\digital_signage\android\app\src\main\java\com\digitalsignage\player\DigitalSignageApplication.kt
+C:\Users\akash\OneDrive\Desktop\digital_signage\android\app\src\main\java\com\digitalsignage\player\player\HeartbeatPayloadFactory.kt
+C:\Users\akash\OneDrive\Desktop\digital_signage\android\app\src\main\java\com\digitalsignage\player\player\HealthSnapshot.kt
+C:\Users\akash\OneDrive\Desktop\digital_signage\android\app\src\main\java\com\digitalsignage\player\player\AppLifecycleManager.kt
+C:\Users\akash\OneDrive\Desktop\digital_signage\android\app\src\main\java\com\digitalsignage\player\player\PlaybackStatistics.kt
+C:\Users\akash\OneDrive\Desktop\digital_signage\android\app\src\main\java\com\digitalsignage\player\player\HeartbeatScheduler.kt
+C:\Users\akash\OneDrive\Desktop\digital_signage\android\app\src\main\java\com\digitalsignage\player\player\PlaybackController.kt
+C:\Users\akash\OneDrive\Desktop\digital_signage\android\app\src\main\java\com\digitalsignage\player\player\DeviceCapabilities.kt
+C:\Users\akash\OneDrive\Desktop\digital_signage\android\app\src\main\java\com\digitalsignage\player\network\model\DeviceModels.kt
+C:\Users\akash\OneDrive\Desktop\digital_signage\android\app\src\main\java\com\digitalsignage\player\player\HeartbeatWorker.kt
+C:\Users\akash\OneDrive\Desktop\digital_signage\android\app\src\main\java\com\digitalsignage\player\network\ApiService.kt
+C:\Users\akash\OneDrive\Desktop\digital_signage\android\app\src\main\java\com\digitalsignage\player\player\RuntimeSnapshot.kt
+C:\Users\akash\OneDrive\Desktop\digital_signage\android\app\src\main\java\com\digitalsignage\player\ui\PlaybackActivity.kt
+C:\Users\akash\OneDrive\Desktop\digital_signage\android\app\src\main\java\com\digitalsignage\player\player\DeviceHealthMonitor.kt

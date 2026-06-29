@@ -3,7 +3,8 @@ import time
 from typing import List
 from sqlalchemy.orm import Session
 from app.models.device import Device
-from app.schemas.device import DeviceCreate, DeviceUpdate, HeartbeatRequest, DeviceStatusResponse
+from app.schemas.device import DeviceCreate, DeviceUpdate, HeartbeatRequest, DeviceStatusResponse, DeviceRegisterRequest, DeviceRegisterResponse
+from datetime import datetime
 
 class DeviceService:
 
@@ -101,6 +102,48 @@ class DeviceService:
         db.commit()
         db.refresh(device)
         return device
+
+    @staticmethod
+    def register_device(db: Session, payload: DeviceRegisterRequest) -> DeviceRegisterResponse:
+        if payload.androidId:
+            existing = db.query(Device).filter(Device.androidId == payload.androidId).first()
+            if existing:
+                # Generate a token if it's an old device without one
+                if not existing.deviceToken:
+                    existing.deviceToken = uuid.uuid4().hex
+                    db.commit()
+                return DeviceRegisterResponse(
+                    deviceId=existing.id,
+                    deviceToken=existing.deviceToken,
+                    backendTime=datetime.utcnow().isoformat() + "Z"
+                )
+        
+        new_id = f"TV-{uuid.uuid4().hex[:8].upper()}"
+        device_token = uuid.uuid4().hex
+        current_time = int(time.time() * 1000)
+        
+        device = Device(
+            id=new_id,
+            name=payload.name,
+            location="Unassigned",
+            resolution=payload.resolution,
+            status="Online",
+            lastSeen="now",
+            lastSeenMs=current_time,
+            ipAddress=payload.ipAddress,
+            appVersion=payload.appVersion,
+            androidId=payload.androidId,
+            deviceToken=device_token,
+            heartbeatAt=current_time
+        )
+        db.add(device)
+        db.commit()
+        
+        return DeviceRegisterResponse(
+            deviceId=device.id,
+            deviceToken=device.deviceToken,
+            backendTime=datetime.utcnow().isoformat() + "Z"
+        )
 
     @staticmethod
     def get_device_status(db: Session, device_id: str) -> DeviceStatusResponse:

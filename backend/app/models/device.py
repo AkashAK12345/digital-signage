@@ -26,3 +26,5 @@ class Device(Base):
     storageTotal = Column(Float, nullable=True)
     uptimeSeconds = Column(BigInteger, nullable=True)
     firmwareVersion = Column(String, nullable=True)
+    deviceToken = Column(String, nullable=True)
+    androidId = Column(String, nullable=True)

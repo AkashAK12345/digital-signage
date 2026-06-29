@@ -50,6 +50,13 @@ class MediaService:
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
             
+        import hashlib
+        sha256 = hashlib.sha256()
+        with open(file_path, "rb") as f:
+            for chunk in iter(lambda: f.read(8192), b""):
+                sha256.update(chunk)
+        checksum = sha256.hexdigest()
+            
         dimensions = "Unknown"
         media_type = "Image"
         duration = None
@@ -77,7 +84,8 @@ class MediaService:
             dimensions=dimensions,
             duration=duration,
             uploadedAt=int(time.time() * 1000),
-            uploadedBy="Admin"
+            uploadedBy="Admin",
+            checksum=checksum
         )
         
         db.add(new_media)

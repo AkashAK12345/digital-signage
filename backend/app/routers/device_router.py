@@ -1,10 +1,11 @@
 from typing import List
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Response
 from sqlalchemy.orm import Session
 
 from app.database.database import get_db
-from app.schemas.device import DeviceCreate, DeviceUpdate, DeviceResponse, HeartbeatRequest, DeviceStatusResponse
+from app.schemas.device import DeviceCreate, DeviceUpdate, DeviceResponse, HeartbeatRequest, DeviceStatusResponse, DeviceRegisterRequest, DeviceRegisterResponse
 from app.services.device_service import DeviceService
+from app.services.player_service import PlayerService
 
 router = APIRouter(
     prefix="/devices",
@@ -19,6 +20,10 @@ def get_devices(db: Session = Depends(get_db)):
 def create_device(payload: DeviceCreate, db: Session = Depends(get_db)):
     return DeviceService.create_device(db, payload)
 
+@router.post("/register", response_model=DeviceRegisterResponse, status_code=status.HTTP_201_CREATED)
+def register_device(payload: DeviceRegisterRequest, db: Session = Depends(get_db)):
+    return DeviceService.register_device(db, payload)
+
 @router.post("/heartbeat", response_model=DeviceResponse)
 def process_heartbeat(payload: HeartbeatRequest, db: Session = Depends(get_db)):
     device = DeviceService.process_heartbeat(db, payload)
@@ -32,6 +37,13 @@ def get_device_status(device_id: str, db: Session = Depends(get_db)):
     if not status_response:
         raise HTTPException(status_code=404, detail="Device not found")
     return status_response
+
+@router.get("/{device_id}/current-playlist")
+def get_current_playlist(device_id: str, db: Session = Depends(get_db)):
+    result = PlayerService.get_current_playlist(db, device_id)
+    if not result:
+        return Response(status_code=204)
+    return result
 
 @router.put("/{device_id}", response_model=DeviceResponse)
 def update_device(device_id: str, payload: DeviceUpdate, db: Session = Depends(get_db)):

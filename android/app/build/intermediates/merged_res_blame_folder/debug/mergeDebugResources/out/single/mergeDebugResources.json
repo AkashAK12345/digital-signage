@@ -1,0 +1,10 @@
+[
+    {
+        "merged": "com.digitalsignage.player.app-debug-46:/layout_activity_splash.xml.flat",
+        "source": "com.digitalsignage.player.app-main-48:/layout/activity_splash.xml"
+    },
+    {
+        "merged": "com.digitalsignage.player.app-debug-46:/layout_activity_playback.xml.flat",
+        "source": "com.digitalsignage.player.app-main-48:/layout/activity_playback.xml"
+    }
+]

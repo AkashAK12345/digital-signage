@@ -1,0 +1,34 @@
+R_DEF: Internal format may change without notice
+local
+color black
+color purple_200
+color purple_500
+color purple_700
+color teal_200
+color teal_700
+color white
+id btnRetry
+id debugView
+id downloadProgressBar
+id idleView
+id imageView
+id loadingIndicator
+id playerView
+id progressBar
+id tvDebugCachedCount
+id tvDebugConnection
+id tvDebugDeviceId
+id tvDebugDownloadStatus
+id tvDebugError
+id tvDebugItemCount
+id tvDebugLastSync
+id tvDebugPlaylistName
+id tvDebugPlaylistVersion
+id tvIdleSubtitle
+id tvIdleTitle
+id tvStatus
+layout activity_playback
+layout activity_splash
+string app_name
+style Theme.DigitalSignage
+style Theme.DigitalSignage.Splash

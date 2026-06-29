@@ -12,6 +12,7 @@ class MediaBase(BaseModel):
     duration: Optional[int] = None
     uploadedAt: int
     uploadedBy: str
+    checksum: Optional[str] = None
 
 class MediaCreate(MediaBase):
     pass

@@ -1,0 +1,38 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.digitalsignage.player.app-mergeDebugResources-44:/values-v18/values-v18.xml",
+            "map": [
+                {
+                    "source": "C:\\Users\\akash\\.gradle\\caches\\8.9\\transforms\\a1df1dc4c053d2a56870b0b526dd4ea1\\transformed\\leanback-1.0.0\\res\\values-v18\\values-v18.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endLines": "10",
+                        "endColumns": "12",
+                        "endOffsets": "642"
+                    },
+                    "to": {
+                        "startLines": "3",
+                        "startColumns": "4",
+                        "startOffsets": "104",
+                        "endLines": "11",
+                        "endColumns": "12",
+                        "endOffsets": "691"
+                    }
+                },
+                {
+                    "source": "C:\\Users\\akash\\.gradle\\caches\\8.9\\transforms\\6b0e75fd12954f2e60f08d299a458d10\\transformed\\appcompat-1.7.0\\res\\values-v18\\values-v18.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "48",
+                        "endOffsets": "99"
+                    }
+                }
+            ]
+        }
+    ]
+}
