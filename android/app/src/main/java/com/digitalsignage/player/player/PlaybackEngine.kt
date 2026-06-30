@@ -7,7 +7,7 @@ interface PlaybackEngineListener {
     fun onMediaDisplayed(item: PlayableMedia, index: Int, total: Int)
     fun onMediaCompleted(item: PlayableMedia)
     fun onPlaybackError(item: PlayableMedia, message: String)
-    fun onSessionReloaded(oldVersion: Int, newVersion: Int)
+    fun onSessionReloaded(oldVersion: Long, newVersion: Long)
 }
 
 /**
@@ -36,7 +36,7 @@ class PlaybackEngine(
             return
         }
 
-        val oldVersion = currentSession?.playlistVersion ?: -1
+        val oldVersion = currentSession?.playlistVersion ?: -1L
         val isReload = isPlaying && oldVersion != session.playlistVersion
 
         if (isReload) {

@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 sealed class DeviceEvent {
     data class PlaybackStarted(val playlistId: String?) : DeviceEvent()
     data class PlaybackCompleted(val mediaId: String?) : DeviceEvent()
-    data class PlaylistChanged(val newVersion: Int) : DeviceEvent()
+    data class PlaylistChanged(val newVersion: Long) : DeviceEvent()
     object ConnectivityLost : DeviceEvent()
     object ConnectivityRestored : DeviceEvent()
     data class HeartbeatSucceeded(val sequenceNumber: Long) : DeviceEvent()

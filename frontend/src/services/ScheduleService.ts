@@ -3,15 +3,15 @@ import type { Schedule } from "../types/schedule";
 
 export const ScheduleService = {
   getSchedules: async (): Promise<Schedule[]> => {
-    return apiClient.get("/schedules", []);
+    return apiClient.get<Schedule[]>("/schedules");
   },
 
   createSchedule: async (data: Omit<Schedule, "id">): Promise<Schedule> => {
-    return apiClient.post("/schedules", {} as Schedule, data);
+    return apiClient.post<Schedule>("/schedules", data);
   },
 
   updateSchedule: async (id: string, data: Partial<Schedule>): Promise<Schedule> => {
-    return apiClient.put(`/schedules/${id}`, {} as Schedule, data);
+    return apiClient.put<Schedule>(`/schedules/${id}`, data);
   },
 
   deleteSchedule: async (id: string): Promise<void> => {

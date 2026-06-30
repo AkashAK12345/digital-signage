@@ -70,7 +70,7 @@ class PlaybackController(
     private var syncJob: Job? = null
     private var eventBusJob: Job? = null
     private var isActive: Boolean = false
-    private var currentPlaylistVersion: Int = -1
+    private var currentPlaylistVersion: Long = -1L
     private var currentPlaylist: CurrentPlaylistResponse? = null
     private var currentSession: PlaybackSession? = null
 
@@ -240,7 +240,7 @@ class PlaybackController(
         pushStateToRepository()
     }
 
-    override fun onSessionReloaded(oldVersion: Int, newVersion: Int) {
+    override fun onSessionReloaded(oldVersion: Long, newVersion: Long) {
         DigitalSignageApplication.logger.i(TAG, "Session reloaded: v$oldVersion -> v$newVersion")
         currentPlaylistVersion = newVersion
         statistics.lastPlaylistSyncTime = System.currentTimeMillis()
@@ -300,7 +300,7 @@ class PlaybackController(
                     connectionStatus = "Connected"
                     lastSyncTime = timeFormat.format(Date())
                     DigitalSignageApplication.logger.i(TAG, "No playlist assigned to this device (HTTP 204)")
-                    currentPlaylistVersion = -1
+                    currentPlaylistVersion = -1L
                     currentPlaylist = null
                     currentSession = null
                     playbackEngine?.stop()

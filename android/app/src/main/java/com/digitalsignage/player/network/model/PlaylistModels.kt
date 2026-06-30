@@ -26,7 +26,7 @@ data class PlaylistItemWithMedia(
 data class CurrentPlaylistResponse(
     val playlistId: String,
     val playlistName: String,
-    val playlistVersion: Int,
-    val updatedAt: Int,
+    val playlistVersion: Long,
+    val updatedAt: Long,
     val items: List<PlaylistItemWithMedia>
 )

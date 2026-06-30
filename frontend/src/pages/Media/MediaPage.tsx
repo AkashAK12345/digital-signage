@@ -116,8 +116,9 @@ export default function MediaPage() {
       setItems(prev => [...uploadedItems, ...prev]);
       enqueueSnackbar(`Successfully uploaded ${files.length} file${files.length !== 1 ? 's' : ''}`, { variant: "success" });
       setUploadOpen(false);
-    } catch (err) {
-      enqueueSnackbar("Failed to upload media", { variant: "error" });
+    } catch (err: any) {
+      console.error("Error uploading media:", err);
+      enqueueSnackbar(err.message || "Failed to upload media", { variant: "error" });
     }
   }, [enqueueSnackbar]);
 

@@ -7,7 +7,7 @@ package com.digitalsignage.player.player
 data class RuntimeSnapshot(
     val playerState: String,
     val currentPlaylistId: String?,
-    val currentPlaylistVersion: Int,
+    val currentPlaylistVersion: Long,
     val currentMediaId: String?,
     val completedItems: Int,
     val skippedItems: Int,

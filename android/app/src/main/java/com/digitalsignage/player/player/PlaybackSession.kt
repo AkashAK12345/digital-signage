@@ -8,7 +8,7 @@ package com.digitalsignage.player.player
 data class PlaybackSession(
     val playlistId: String,
     val playlistName: String,
-    val playlistVersion: Int,
+    val playlistVersion: Long,
     val items: List<PlayableMedia>,
     val currentIndex: Int = 0,
     val isReloadRequested: Boolean = false

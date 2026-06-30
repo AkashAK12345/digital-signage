@@ -128,8 +128,9 @@ export default function PlaylistsPage() {
       }
       enqueueSnackbar(`Playlist "${savedPlaylist.name}" saved successfully`, { variant: "success" });
       setEditorOpen(false);
-    } catch (err) {
-      enqueueSnackbar("Failed to save playlist", { variant: "error" });
+    } catch (err: any) {
+      console.error("Error saving playlist:", err);
+      enqueueSnackbar(err.message || "Failed to save playlist", { variant: "error" });
     }
   }, [items, enqueueSnackbar]);
 

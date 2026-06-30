@@ -3,11 +3,11 @@ import type { MediaItem } from "../types/media";
 
 export const MediaService = {
   getMedia: async (): Promise<MediaItem[]> => {
-    return apiClient.get("/media", []);
+    return apiClient.get<MediaItem[]>("/media");
   },
 
   getMediaById: async (id: string): Promise<MediaItem> => {
-    return apiClient.get(`/media/${id}`, {} as MediaItem);
+    return apiClient.get<MediaItem>(`/media/${id}`);
   },
 
   uploadMedia: async (data: Omit<MediaItem, "id">): Promise<MediaItem> => {
@@ -37,7 +37,7 @@ export const MediaService = {
   },
 
   updateMedia: async (id: string, data: Partial<MediaItem>): Promise<MediaItem> => {
-    return apiClient.put(`/media/${id}`, {} as MediaItem, data);
+    return apiClient.put<MediaItem>(`/media/${id}`, data);
   },
 
   deleteMedia: async (id: string): Promise<void> => {

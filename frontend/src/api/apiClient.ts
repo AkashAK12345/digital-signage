@@ -1,64 +1,70 @@
 /**
- * API client to route requests between real FastAPI backend and mock fallback.
+ * API client to route requests to real FastAPI backend.
  */
 
-const LATENCY_MS = 600;
 const API_BASE = "http://localhost:8000";
 
-const isRealApi = (url: string) => {
-  return url.startsWith("/devices") || url.startsWith("/media") || url.startsWith("/playlists") || url.startsWith("/schedules");
-};
-
 export const apiClient = {
-  get: async <T>(url: string, mockData: T): Promise<T> => {
-    if (isRealApi(url)) {
-      const res = await fetch(`${API_BASE}${url}`);
-      if (!res.ok) throw new Error(`GET ${url} failed`);
-      return res.json();
-    }
-    return new Promise((resolve) => {
-      setTimeout(() => resolve(mockData), LATENCY_MS);
-    });
+  get: async <T>(url: string): Promise<T> => {
+    const res = await fetch(`${API_BASE}${url}`);
+    if (!res.ok) throw new Error(`GET ${url} failed`);
+    return res.json();
   },
   
-  post: async <T>(url: string, mockData: T, body?: any): Promise<T> => {
-    if (isRealApi(url)) {
-      const res = await fetch(`${API_BASE}${url}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body || mockData),
-      });
-      if (!res.ok) throw new Error(`POST ${url} failed`);
-      return res.json();
-    }
-    return new Promise((resolve) => {
-      setTimeout(() => resolve(mockData), LATENCY_MS);
+  post: async <T>(url: string, body: any): Promise<T> => {
+    const res = await fetch(`${API_BASE}${url}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
     });
+    
+    // Attempt to parse JSON error response from FastAPI to surface validation errors
+    if (!res.ok) {
+      let errorMsg = `POST ${url} failed`;
+      try {
+        const errorData = await res.json();
+        if (errorData && errorData.detail) {
+          errorMsg = typeof errorData.detail === 'string' ? errorData.detail : JSON.stringify(errorData.detail);
+        }
+      } catch (e) {
+        // Ignored, fallback to generic error message
+      }
+      throw new Error(errorMsg);
+    }
+    
+    // Return empty object for 204 No Content to avoid JSON parse errors
+    if (res.status === 204) return {} as T;
+    
+    return res.json();
   },
 
-  put: async <T>(url: string, mockData: T, body?: any): Promise<T> => {
-    if (isRealApi(url)) {
-      const res = await fetch(`${API_BASE}${url}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body || mockData),
-      });
-      if (!res.ok) throw new Error(`PUT ${url} failed`);
-      return res.json();
-    }
-    return new Promise((resolve) => {
-      setTimeout(() => resolve(mockData), LATENCY_MS);
+  put: async <T>(url: string, body: any): Promise<T> => {
+    const res = await fetch(`${API_BASE}${url}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
     });
+    
+    if (!res.ok) {
+      let errorMsg = `PUT ${url} failed`;
+      try {
+        const errorData = await res.json();
+        if (errorData && errorData.detail) {
+          errorMsg = typeof errorData.detail === 'string' ? errorData.detail : JSON.stringify(errorData.detail);
+        }
+      } catch (e) {
+        // Ignored, fallback to generic error message
+      }
+      throw new Error(errorMsg);
+    }
+    
+    if (res.status === 204) return {} as T;
+    
+    return res.json();
   },
 
   delete: async (url: string): Promise<void> => {
-    if (isRealApi(url)) {
-      const res = await fetch(`${API_BASE}${url}`, { method: "DELETE" });
-      if (!res.ok) throw new Error(`DELETE ${url} failed`);
-      return;
-    }
-    return new Promise((resolve) => {
-      setTimeout(() => resolve(), LATENCY_MS);
-    });
+    const res = await fetch(`${API_BASE}${url}`, { method: "DELETE" });
+    if (!res.ok) throw new Error(`DELETE ${url} failed`);
   },
 };

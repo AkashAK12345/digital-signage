@@ -141,8 +141,9 @@ export default function DevicesPage() {
         enqueueSnackbar(`Device "${values.name}" updated`, { variant: "success" });
       }
       setFormOpen(false);
-    } catch (err) {
-      enqueueSnackbar("Failed to save device", { variant: "error" });
+    } catch (err: any) {
+      console.error("Error saving device:", err);
+      enqueueSnackbar(err.message || "Failed to save device", { variant: "error" });
     }
   }, [formMode, enqueueSnackbar]);
 

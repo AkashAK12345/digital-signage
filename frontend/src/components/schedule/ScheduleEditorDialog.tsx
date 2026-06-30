@@ -210,8 +210,8 @@ export default function ScheduleEditorDialog({ open, mode, initialSchedule, exis
       </DialogContent>
 
       <DialogActions sx={{ px: 3, pb: 3, gap: 1 }}>
-        <Button onClick={onClose} sx={{ color: "#64748B", fontWeight: 600 }}>Cancel</Button>
-        <Button variant="contained" onClick={handleSave} sx={{ bgcolor: "#D97706", "&:hover": { bgcolor: "#B45309" }, fontWeight: 700, borderRadius: "10px" }}>
+        <Button type="button" onClick={onClose} sx={{ color: "#64748B", fontWeight: 600 }}>Cancel</Button>
+        <Button type="button" variant="contained" onClick={handleSave} sx={{ bgcolor: "#D97706", "&:hover": { bgcolor: "#B45309" }, fontWeight: 700, borderRadius: "10px" }}>
           {mode === "create" ? "Create Schedule" : "Save Changes"}
         </Button>
       </DialogActions>
