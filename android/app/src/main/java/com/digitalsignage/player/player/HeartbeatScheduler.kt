@@ -10,6 +10,11 @@ import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.digitalsignage.player.DigitalSignageApplication
 import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import androidx.work.OneTimeWorkRequestBuilder
 
 /**
  * Responsibilities:
@@ -66,5 +71,11 @@ class HeartbeatScheduler(private val context: Context) {
     fun cancelHeartbeats() {
         logger.i(TAG, "Cancelling periodic heartbeats")
         WorkManager.getInstance(context).cancelUniqueWork(HEARTBEAT_WORK_NAME)
+    }
+
+    private fun scheduleImmediateHeartbeat() {
+        logger.i(TAG, "Scheduling immediate heartbeat")
+        val request = OneTimeWorkRequestBuilder<HeartbeatWorker>().build()
+        WorkManager.getInstance(context).enqueue(request)
     }
 }

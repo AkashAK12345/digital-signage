@@ -41,7 +41,7 @@ class PlaybackActivity : AppCompatActivity(), PlaybackControllerListener {
         }
         
         val startupReasonStr = intent.getStringExtra("startup_reason") ?: "NORMAL"
-        logger.i(TAG, "PlaybackActivity starting for device: $deviceId (Reason: $startupReasonStr)")
+        DigitalSignageApplication.logger.i(TAG, "PlaybackActivity starting for device: $deviceId (Reason: $startupReasonStr)")
         val mediaCacheManager = MediaCacheManager(applicationContext)
 
         val dataStore = DeviceDataStore(applicationContext)

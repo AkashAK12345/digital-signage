@@ -1,8 +1,27 @@
 {
     "logs": [
         {
-            "outputFile": "com.digitalsignage.player.app-mergeDebugResources-44:/values/values.xml",
+            "outputFile": "com.digitalsignage.player.app-mergeDebugResources-2:/values/values.xml",
             "map": [
+                {
+                    "source": "C:\\Projects\\digital-signage\\android\\app\\src\\main\\res\\values\\themes.xml",
+                    "from": {
+                        "startLines": "3,10",
+                        "startColumns": "4,4",
+                        "startOffsets": "95,418",
+                        "endLines": "8,12",
+                        "endColumns": "12,12",
+                        "endOffsets": "410,571"
+                    },
+                    "to": {
+                        "startLines": "2677,2683",
+                        "startColumns": "4,4",
+                        "startOffsets": "174283,174569",
+                        "endLines": "2682,2685",
+                        "endColumns": "12,12",
+                        "endOffsets": "174564,174720"
+                    }
+                },
                 {
                     "source": "C:\\Users\\akash\\.gradle\\caches\\8.9\\transforms\\0a4627a3dbdd9d0823ec3d19775d4576\\transformed\\media3-ui-1.3.1\\res\\values\\values.xml",
                     "from": {
@@ -42,23 +61,6 @@
                     }
                 },
                 {
-                    "source": "C:\\Users\\akash\\OneDrive\\Desktop\\digital_signage\\android\\app\\src\\main\\res\\values\\strings.xml",
-                    "from": {
-                        "startLines": "1",
-                        "startColumns": "4",
-                        "startOffsets": "16",
-                        "endColumns": "59",
-                        "endOffsets": "71"
-                    },
-                    "to": {
-                        "startLines": "898",
-                        "startColumns": "4",
-                        "startOffsets": "57074",
-                        "endColumns": "59",
-                        "endOffsets": "57129"
-                    }
-                },
-                {
                     "source": "C:\\Users\\akash\\.gradle\\caches\\8.9\\transforms\\0c14e823a32596a6ffdde0685aceab08\\transformed\\lifecycle-runtime-release\\res\\values\\values.xml",
                     "from": {
                         "startLines": "2",
@@ -73,6 +75,40 @@
                         "startOffsets": "51431",
                         "endColumns": "42",
                         "endOffsets": "51469"
+                    }
+                },
+                {
+                    "source": "C:\\Projects\\digital-signage\\android\\app\\src\\main\\res\\values\\strings.xml",
+                    "from": {
+                        "startLines": "1",
+                        "startColumns": "4",
+                        "startOffsets": "17",
+                        "endColumns": "59",
+                        "endOffsets": "72"
+                    },
+                    "to": {
+                        "startLines": "898",
+                        "startColumns": "4",
+                        "startOffsets": "57074",
+                        "endColumns": "59",
+                        "endOffsets": "57129"
+                    }
+                },
+                {
+                    "source": "C:\\Projects\\digital-signage\\android\\app\\src\\main\\res\\values\\colors.xml",
+                    "from": {
+                        "startLines": "7,2,3,4,5,6,8",
+                        "startColumns": "4,4,4,4,4,4,4",
+                        "startOffsets": "293,57,105,153,201,247,336",
+                        "endColumns": "41,46,46,46,44,44,41",
+                        "endOffsets": "330,99,147,195,241,287,373"
+                    },
+                    "to": {
+                        "startLines": "104,209,210,211,222,223,226",
+                        "startColumns": "4,4,4,4,4,4,4",
+                        "startOffsets": "5035,11959,12006,12053,12797,12842,13008",
+                        "endColumns": "41,46,46,46,44,44,41",
+                        "endOffsets": "5072,12001,12048,12095,12837,12882,13045"
                     }
                 },
                 {
@@ -93,25 +129,6 @@
                     }
                 },
                 {
-                    "source": "C:\\Users\\akash\\OneDrive\\Desktop\\digital_signage\\android\\app\\src\\main\\res\\values\\themes.xml",
-                    "from": {
-                        "startLines": "3,10",
-                        "startColumns": "4,4",
-                        "startOffsets": "92,408",
-                        "endLines": "8,12",
-                        "endColumns": "12,12",
-                        "endOffsets": "402,559"
-                    },
-                    "to": {
-                        "startLines": "2677,2683",
-                        "startColumns": "4,4",
-                        "startOffsets": "174283,174569",
-                        "endLines": "2682,2685",
-                        "endColumns": "12,12",
-                        "endOffsets": "174564,174720"
-                    }
-                },
-                {
                     "source": "C:\\Users\\akash\\.gradle\\caches\\8.9\\transforms\\29e6e780009856eb92c4879a469efd92\\transformed\\startup-runtime-1.1.1\\res\\values\\values.xml",
                     "from": {
                         "startLines": "2",
@@ -126,23 +143,6 @@
                         "startOffsets": "56991",
                         "endColumns": "82",
                         "endOffsets": "57069"
-                    }
-                },
-                {
-                    "source": "C:\\Users\\akash\\OneDrive\\Desktop\\digital_signage\\android\\app\\src\\main\\res\\values\\colors.xml",
-                    "from": {
-                        "startLines": "7,2,3,4,5,6,8",
-                        "startColumns": "4,4,4,4,4,4,4",
-                        "startOffsets": "286,55,102,149,196,241,328",
-                        "endColumns": "41,46,46,46,44,44,41",
-                        "endOffsets": "323,97,144,191,236,281,365"
-                    },
-                    "to": {
-                        "startLines": "104,209,210,211,222,223,226",
-                        "startColumns": "4,4,4,4,4,4,4",
-                        "startOffsets": "5035,11959,12006,12053,12797,12842,13008",
-                        "endColumns": "41,46,46,46,44,44,41",
-                        "endOffsets": "5072,12001,12048,12095,12837,12882,13045"
                     }
                 },
                 {

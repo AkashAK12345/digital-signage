@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.digitalsignage.player.app-mergeDebugResources-44:/values-tr/values-tr.xml",
+            "outputFile": "com.digitalsignage.player.app-mergeDebugResources-2:/values-tr/values-tr.xml",
             "map": [
                 {
                     "source": "C:\\Users\\akash\\.gradle\\caches\\8.9\\transforms\\a1df1dc4c053d2a56870b0b526dd4ea1\\transformed\\leanback-1.0.0\\res\\values-tr\\values-tr.xml",

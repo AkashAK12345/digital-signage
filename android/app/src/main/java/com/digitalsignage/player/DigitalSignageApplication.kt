@@ -16,6 +16,7 @@ class DigitalSignageApplication : Application() {
             private set
         lateinit var connectivityObserver: com.digitalsignage.player.network.ConnectivityObserver
             private set
+        var playbackController: PlaybackController? = null
     }
 
     override fun onCreate() {
@@ -32,8 +33,12 @@ class DigitalSignageApplication : Application() {
             override fun w(tag: String, message: String) {
                 android.util.Log.w(tag, message)
             }
-            override fun e(tag: String, message: String) {
-                android.util.Log.e(tag, message)
+            override fun e(tag: String, message: String, throwable: Throwable?) {
+                if (throwable != null) {
+                    android.util.Log.e(tag, message, throwable)
+                } else {
+                    android.util.Log.e(tag, message)
+                }
             }
         }
         

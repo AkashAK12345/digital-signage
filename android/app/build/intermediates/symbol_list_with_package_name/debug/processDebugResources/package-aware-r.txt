@@ -2022,6 +2022,8 @@ layout select_dialog_multichoice_material
 layout select_dialog_singlechoice_material
 layout support_simple_spinner_dropdown_item
 layout video_surface_fragment
+mipmap ic_launcher
+mipmap ic_launcher_round
 plurals exo_controls_fastforward_by_amount_description
 plurals exo_controls_rewind_by_amount_description
 raw lb_voice_failure
@@ -2749,3 +2751,5 @@ transition lb_title_out
 transition lb_vertical_grid_enter_transition
 transition lb_vertical_grid_entrance_transition
 transition lb_vertical_grid_return_transition
+xml backup_rules
+xml data_extraction_rules

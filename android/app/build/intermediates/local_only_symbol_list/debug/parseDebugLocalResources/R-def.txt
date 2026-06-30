@@ -29,6 +29,10 @@ id tvIdleTitle
 id tvStatus
 layout activity_playback
 layout activity_splash
+mipmap ic_launcher
+mipmap ic_launcher_round
 string app_name
 style Theme.DigitalSignage
 style Theme.DigitalSignage.Splash
+xml backup_rules
+xml data_extraction_rules

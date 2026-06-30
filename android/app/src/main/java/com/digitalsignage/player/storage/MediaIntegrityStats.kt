@@ -5,5 +5,6 @@ data class MediaIntegrityStats(
     var missingFiles: Int = 0,
     var orphanedFiles: Int = 0,
     var recoveredFiles: Int = 0,
-    var lastSuccessfulVerification: Long = 0L
+    var lastSuccessfulVerification: Long = 0L,
+    var failedDownloadCount: Int = 0
 )
