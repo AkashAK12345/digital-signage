@@ -95,12 +95,14 @@ class SplashActivity : AppCompatActivity() {
     }
 
     private fun navigateToPlayback(deviceId: String) {
-        val reason = intent.getStringExtra("startup_reason") ?: "NORMAL"
+        val reason = intent.getStringExtra("startup_reason") ?: com.digitalsignage.player.core.recovery.StartupReason.NORMAL.name
         val intent = Intent(this, PlaybackActivity::class.java).apply {
-            putExtra(PlaybackActivity.EXTRA_DEVICE_ID, deviceId)
+            putExtra("extra_device_id", deviceId)
             putExtra("startup_reason", reason)
         }
         startActivity(intent)
         finish()
     }
 }
+
+

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Box } from "@mui/material";
 import { useSnackbar } from "notistack";
 
@@ -22,6 +23,21 @@ export default function DevicesPage() {
   const [devices, setDevices] = useState<Device[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  // ── Router state ─────────────────────────────────────────────────────────
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (location.state?.openCreateDialog) {
+      setFormMode("add");
+      setFormInitial(undefined);
+      setFormOpen(true);
+      
+      // Clear the state so refreshing doesn't reopen the dialog
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location, navigate]);
 
   useEffect(() => {
     fetchDevices();
@@ -142,7 +158,6 @@ export default function DevicesPage() {
       }
       setFormOpen(false);
     } catch (err: any) {
-      console.error("Error saving device:", err);
       enqueueSnackbar(err.message || "Failed to save device", { variant: "error" });
     }
   }, [formMode, enqueueSnackbar]);
@@ -158,8 +173,8 @@ export default function DevicesPage() {
       await DeviceService.deleteDevice(deleteTarget.id);
       setDevices((prev) => prev.filter((d) => d.id !== deleteTarget.id));
       enqueueSnackbar(`Device "${deleteTarget.name}" deleted`, { variant: "success" });
-    } catch (err) {
-      enqueueSnackbar("Failed to delete device", { variant: "error" });
+    } catch (err: any) {
+      enqueueSnackbar(err.message || "Failed to delete device", { variant: "error" });
     } finally {
       setDeleteTarget(null);
     }

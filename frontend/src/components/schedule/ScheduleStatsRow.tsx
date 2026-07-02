@@ -136,6 +136,7 @@ export default function ScheduleStatsRow({
       icon: WarningRoundedIcon,
       color: "#EF4444",
       subtitle: "Require attention",
+      filterValue: "Conflict",
     },
   ];
 

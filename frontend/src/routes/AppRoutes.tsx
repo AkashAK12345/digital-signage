@@ -7,7 +7,6 @@ import DevicesPage from "../pages/Devices/DevicesPage";
 import MediaPage from "../pages/Media/MediaPage";
 import PlaylistsPage from "../pages/Playlists/PlaylistsPage";
 import SchedulePage from "../pages/Schedule/SchedulePage";
-import AnalyticsPage from "../pages/Analytics/AnalyticsPage";
 import LoginPage from "../pages/Login/LoginPage";
 
 export default function AppRoutes() {
@@ -22,7 +21,6 @@ export default function AppRoutes() {
           <Route path="/media" element={<MediaPage />} />
           <Route path="/playlists" element={<PlaylistsPage />} />
           <Route path="/schedule" element={<SchedulePage />} />
-          <Route path="/analytics" element={<AnalyticsPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

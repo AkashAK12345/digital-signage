@@ -65,6 +65,17 @@ export const apiClient = {
 
   delete: async (url: string): Promise<void> => {
     const res = await fetch(`${API_BASE}${url}`, { method: "DELETE" });
-    if (!res.ok) throw new Error(`DELETE ${url} failed`);
+    if (!res.ok) {
+      let errorMsg = `DELETE ${url} failed`;
+      try {
+        const errorData = await res.json();
+        if (errorData && errorData.detail) {
+          errorMsg = typeof errorData.detail === 'string' ? errorData.detail : JSON.stringify(errorData.detail);
+        }
+      } catch (e) {
+        // Ignored, fallback to generic error message
+      }
+      throw new Error(errorMsg);
+    }
   },
 };

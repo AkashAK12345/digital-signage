@@ -3,6 +3,7 @@ import {
   Button,
   Typography,
 } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 import TvRoundedIcon from "@mui/icons-material/TvRounded";
 import CloudUploadRoundedIcon from "@mui/icons-material/CloudUploadRounded";
@@ -11,26 +12,32 @@ import EventRoundedIcon from "@mui/icons-material/EventRounded";
 
 import DashboardCard from "../common/DashboardCard";
 
-const actions = [
-  {
-    title: "Add Device",
-    icon: <TvRoundedIcon />,
-  },
-  {
-    title: "Upload Media",
-    icon: <CloudUploadRoundedIcon />,
-  },
-  {
-    title: "Create Playlist",
-    icon: <PlaylistPlayRoundedIcon />,
-  },
-  {
-    title: "Schedule",
-    icon: <EventRoundedIcon />,
-  },
-];
-
 export default function QuickActions() {
+  const navigate = useNavigate();
+
+  const actions = [
+    {
+      title: "Add Device",
+      icon: <TvRoundedIcon />,
+      action: () => navigate("/devices", { state: { openCreateDialog: true } }),
+    },
+    {
+      title: "Upload Media",
+      icon: <CloudUploadRoundedIcon />,
+      action: () => navigate("/media", { state: { openUploadDialog: true } }),
+    },
+    {
+      title: "Create Playlist",
+      icon: <PlaylistPlayRoundedIcon />,
+      action: () => navigate("/playlists", { state: { openCreateDialog: true } }),
+    },
+    {
+      title: "Schedule",
+      icon: <EventRoundedIcon />,
+      action: () => navigate("/schedule", { state: { openCreateDialog: true } }),
+    },
+  ];
+
   return (
     <DashboardCard>
       <Typography
@@ -54,6 +61,7 @@ export default function QuickActions() {
           <Button
             key={item.title}
             variant="outlined"
+            onClick={item.action}
             sx={{
               height: 90,
               borderRadius: "16px",

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Box } from "@mui/material";
 import { useSnackbar } from "notistack";
 
@@ -23,6 +24,19 @@ export default function MediaPage() {
   const [items, setItems] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  // ── Router state ─────────────────────────────────────────────────────────
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (location.state?.openUploadDialog) {
+      setUploadOpen(true);
+      
+      // Clear the state so refreshing doesn't reopen the dialog
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location, navigate]);
 
   useEffect(() => {
     fetchMedia();
@@ -117,7 +131,6 @@ export default function MediaPage() {
       enqueueSnackbar(`Successfully uploaded ${files.length} file${files.length !== 1 ? 's' : ''}`, { variant: "success" });
       setUploadOpen(false);
     } catch (err: any) {
-      console.error("Error uploading media:", err);
       enqueueSnackbar(err.message || "Failed to upload media", { variant: "error" });
     }
   }, [enqueueSnackbar]);
@@ -129,8 +142,8 @@ export default function MediaPage() {
       await MediaService.deleteMedia(deleteTarget.id);
       setItems(prev => prev.filter(i => i.id !== deleteTarget.id));
       enqueueSnackbar(`Deleted "${deleteTarget.name}"`, { variant: "success" });
-    } catch (err) {
-      enqueueSnackbar("Failed to delete media", { variant: "error" });
+    } catch (err: any) {
+      enqueueSnackbar(err.message || "Failed to delete media", { variant: "error" });
     } finally {
       setDeleteTarget(null);
     }

@@ -26,6 +26,17 @@ export default function DeviceSelector({ devices, value, onChange, disabled }: P
     }
   };
 
+  const getStatusIndicator = (status: string) => {
+    switch (status) {
+      case "Online": return "🟢";
+      case "Idle": return "🟡";
+      case "Offline": return "🔴";
+      default: return "⚪";
+    }
+  };
+
+  const hasOfflineSelected = devices.some(d => value.includes(d.id) && d.status === "Offline");
+
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -56,13 +67,18 @@ export default function DeviceSelector({ devices, value, onChange, disabled }: P
               }
               label={
                 <Typography sx={{ fontSize: 14 }}>
-                  {device.name} <Typography component="span" sx={{ fontSize: 12, color: "#64748B" }}>({device.location})</Typography>
+                  {getStatusIndicator(device.status)} {device.name} <Typography component="span" sx={{ fontSize: 12, color: "#64748B" }}>({device.status})</Typography>
                 </Typography>
               }
             />
           ))}
         </FormGroup>
       </Box>
+      {hasOfflineSelected && (
+        <Typography sx={{ fontSize: 13, color: "#D97706", mt: 0.5, bgcolor: "#FEF3C7", p: 1, borderRadius: "8px" }}>
+          One or more selected devices are currently offline. The schedule will be delivered automatically when they reconnect.
+        </Typography>
+      )}
     </Box>
   );
 }

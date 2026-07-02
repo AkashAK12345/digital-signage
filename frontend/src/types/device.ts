@@ -8,6 +8,9 @@ export interface Device {
   status: DeviceStatus;
   lastSeen: string;
   lastSeenMs: number;
+  heartbeatAt?: number | null;
+  currentPlaylistId?: string | null;
+  currentMediaId?: string | null;
   ipAddress?: string;
   storage?: string;
 }

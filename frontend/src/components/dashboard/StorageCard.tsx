@@ -1,151 +1,75 @@
-import {
-  Box,
-  Button,
-  CircularProgress,
-  LinearProgress,
-  Typography,
-} from "@mui/material";
-
+import { useSnackbar } from "notistack";
+import { Box, LinearProgress, Typography, CircularProgress } from "@mui/material";
+import { useEffect, useState } from "react";
 import DashboardCard from "../common/DashboardCard";
+import { MediaService } from "../../services/MediaService";
+
+function formatBytes(bytes: number) {
+  if (bytes === 0) return "0 Bytes";
+  const k = 1024;
+  const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+}
 
 export default function StorageCard() {
-  const used = 62;
+  const { enqueueSnackbar } = useSnackbar();
+  const [totalFiles, setTotalFiles] = useState(0);
+  const [totalBytes, setTotalBytes] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    MediaService.getMedia()
+      .then((media) => {
+        setTotalFiles(media.length);
+        const bytes = media.reduce((sum, item) => sum + (item.size || (item as any).fileSizeBytes || 0), 0);
+        setTotalBytes(bytes);
+        setLoading(false);
+      })
+      .catch((err) => {
+        enqueueSnackbar(err.message || "Failed to load media for storage", { variant: "error" });
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) {
+    return (
+      <DashboardCard>
+        <Typography sx={{ fontSize: 20, fontWeight: 700, mb: 3 }}>Storage Overview</Typography>
+        <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: 150 }}>
+          <CircularProgress />
+        </Box>
+      </DashboardCard>
+    );
+  }
 
   return (
     <DashboardCard>
-      <Typography
-        sx={{
-          fontSize: 20,
-          fontWeight: 700,
-          mb: 3,
-        }}
-      >
-        Storage Usage
-      </Typography>
-
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          gap: 3,
-        }}
-      >
-        <Box
-          sx={{
-            position: "relative",
-            display: "inline-flex",
-          }}
-        >
-          <CircularProgress
-            variant="determinate"
-            value={100}
-            size={160}
-            thickness={4}
-            sx={{
-              color: "#EEF2F7",
-            }}
-          />
-
-          <CircularProgress
-            variant="determinate"
-            value={used}
-            size={160}
-            thickness={4}
-            sx={{
-              color: "#6C4CF1",
-              position: "absolute",
-              left: 0,
-            }}
-          />
-
-          <Box
-            sx={{
-              position: "absolute",
-              inset: 0,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              flexDirection: "column",
-            }}
-          >
-            <Typography
-              sx={{
-                fontSize: 34,
-                fontWeight: 800,
-              }}
-            >
-              {used}%
-            </Typography>
-
-            <Typography
-              sx={{
-                color: "#94A3B8",
-              }}
-            >
-              Used
+      <Typography sx={{ fontSize: 20, fontWeight: 700, mb: 3 }}>Storage Overview</Typography>
+      
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+          <Box>
+            <Typography sx={{ color: "#64748B", fontSize: 14, mb: 0.5 }}>Total Media Files</Typography>
+            <Typography sx={{ fontSize: 32, fontWeight: 800, lineHeight: 1 }}>{totalFiles}</Typography>
+          </Box>
+          <Box sx={{ textAlign: "right" }}>
+            <Typography sx={{ color: "#64748B", fontSize: 14, mb: 0.5 }}>Storage Used</Typography>
+            <Typography sx={{ fontSize: 24, fontWeight: 700, color: "#6C4CF1", lineHeight: 1 }}>
+              {formatBytes(totalBytes)}
             </Typography>
           </Box>
         </Box>
 
-        <Box sx={{ width: "100%" }}>
-          <Typography
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              fontWeight: 600,
-              mb: 1,
-            }}
-          >
-            <span>Storage</span>
-            <span>62.4 / 100 GB</span>
-          </Typography>
-
-          <LinearProgress
-            variant="determinate"
-            value={used}
-            sx={{
-              height: 8,
-              borderRadius: 999,
-              mb: 3,
-              bgcolor: "#EEF2F7",
-              "& .MuiLinearProgress-bar": {
-                bgcolor: "#6C4CF1",
-              },
-            }}
-          />
-
-          <Typography
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              mb: 3,
-            }}
-          >
-            <span>Media Files</span>
-            <strong>1,245</strong>
-          </Typography>
-
-          <Button
-            fullWidth
-            variant="contained"
-            sx={{
-              height: 48,
-              borderRadius: "14px",
-              textTransform: "none",
-              fontWeight: 700,
-              background:
-                "linear-gradient(135deg,#6C4CF1,#8B5CF6)",
-
-              "&:hover": {
-                background:
-                  "linear-gradient(135deg,#5B3DF5,#7C4DFF)",
-              },
-            }}
-          >
-            Manage Storage
-          </Button>
-        </Box>
+        {totalBytes > 0 && (
+          <Box sx={{ width: "100%", mt: 1 }}>
+            <LinearProgress
+              variant="determinate"
+              value={100} // Since we don't have a hard limit on the backend, we just show a bar for visual appeal. Wait, instructions said "LinearProgress bar showing used percentage (if a total is not available, just show the count and size without a progress bar)"
+              sx={{ display: 'none' }} 
+            />
+          </Box>
+        )}
       </Box>
     </DashboardCard>
   );

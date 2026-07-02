@@ -44,7 +44,15 @@ export function findConflicts(schedules: Schedule[], newSchedule: Schedule): Sch
     const sharedDevices = existing.deviceIds.some(id => newSchedule.deviceIds.includes(id));
     if (!sharedDevices) return false;
 
-    // Simple time overlap logic for demo purposes (ignores date/repeat complexity)
+    // Date overlap logic
+    const existingStartDate = new Date(existing.startDate).getTime();
+    const existingEndDate = new Date(existing.endDate).getTime();
+    const newStartDate = new Date(newSchedule.startDate).getTime();
+    const newEndDate = new Date(newSchedule.endDate).getTime();
+
+    const dateOverlap = (newStartDate <= existingEndDate && newEndDate >= existingStartDate);
+    
+    // Time overlap logic
     const existingStart = parseTime(existing.startTime);
     const existingEnd = parseTime(existing.endTime);
     const newStart = parseTime(newSchedule.startTime);
@@ -52,7 +60,7 @@ export function findConflicts(schedules: Schedule[], newSchedule: Schedule): Sch
 
     const timeOverlap = (newStart < existingEnd && newEnd > existingStart);
     
-    return timeOverlap;
+    return dateOverlap && timeOverlap;
   });
 }
 

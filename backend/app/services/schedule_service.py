@@ -37,7 +37,10 @@ class ScheduleService:
         
         # Get all schedules that target these devices
         for device_id in device_ids:
-            device_schedules = db.query(Schedule).join(ScheduleDevice).filter(ScheduleDevice.deviceId == device_id).all()
+            device_schedules = db.query(Schedule).join(ScheduleDevice).filter(
+                ScheduleDevice.deviceId == device_id,
+                Schedule.status == "Active"
+            ).all()
             for existing in device_schedules:
                 if exclude_schedule_id and existing.id == exclude_schedule_id:
                     continue
@@ -58,8 +61,11 @@ class ScheduleService:
     @staticmethod
     def _validate_schedule(db: Session, data: dict, exclude_schedule_id: str = None):
         if "playlistId" in data:
-            if not db.query(Playlist).filter(Playlist.id == data["playlistId"]).first():
+            playlist = db.query(Playlist).filter(Playlist.id == data["playlistId"]).first()
+            if not playlist:
                 raise HTTPException(status_code=400, detail="Referenced Playlist does not exist.")
+            if playlist.status != "Published":
+                raise HTTPException(status_code=400, detail="Only Published playlists can be scheduled.")
         
         if "deviceIds" in data:
             for d_id in data["deviceIds"]:
@@ -151,9 +157,20 @@ class ScheduleService:
 
     @staticmethod
     def delete_schedule(db: Session, schedule_id: str) -> bool:
+        from fastapi import HTTPException
+        from sqlalchemy.exc import IntegrityError
+        
         schedule = db.query(Schedule).filter(Schedule.id == schedule_id).first()
         if not schedule:
             return False
-        db.delete(schedule)
-        db.commit()
-        return True
+            
+        try:
+            db.delete(schedule)
+            db.commit()
+            return True
+        except IntegrityError:
+            db.rollback()
+            raise HTTPException(
+                status_code=409,
+                detail="Cannot delete schedule because it is referenced by another entity."
+            )

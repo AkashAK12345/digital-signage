@@ -93,6 +93,19 @@ class PlaylistService:
 
         if payload.name == "":
             raise HTTPException(status_code=400, detail="Playlist name cannot be empty.")
+
+        # Block changing status away from Published if active schedules reference this playlist
+        if payload.status is not None and playlist.status == "Published" and payload.status != "Published":
+            from app.models.schedule import Schedule
+            active_schedules = db.query(Schedule).filter(
+                Schedule.playlistId == playlist_id,
+                Schedule.status == "Active"
+            ).first()
+            if active_schedules:
+                raise HTTPException(
+                    status_code=409,
+                    detail="Cannot change playlist status because it is currently assigned to one or more active schedules."
+                )
             
         if payload.items is not None or payload.assignedDeviceIds is not None:
             items_to_check = payload.items if payload.items is not None else [i for i in playlist.items]
@@ -133,9 +146,20 @@ class PlaylistService:
 
     @staticmethod
     def delete_playlist(db: Session, playlist_id: str) -> bool:
+        from fastapi import HTTPException
+        from sqlalchemy.exc import IntegrityError
+        
         playlist = db.query(Playlist).filter(Playlist.id == playlist_id).first()
         if not playlist:
             return False
-        db.delete(playlist)
-        db.commit()
-        return True
+            
+        try:
+            db.delete(playlist)
+            db.commit()
+            return True
+        except IntegrityError:
+            db.rollback()
+            raise HTTPException(
+                status_code=409,
+                detail="Cannot delete playlist because it is assigned to one or more schedules."
+            )

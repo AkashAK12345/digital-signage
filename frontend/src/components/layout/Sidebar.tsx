@@ -17,7 +17,7 @@ import { navigationItems } from "../../constants/navigation";
 
 const drawerWidth = 300;
 
-export default function Sidebar() {
+export default function Sidebar({ open = true }: { open?: boolean }) {
   const mainItems = navigationItems.filter(
     (item) => item.section === "main"
   );
@@ -26,14 +26,19 @@ export default function Sidebar() {
     (item) => item.section === "management"
   );
 
+  const currentWidth = open ? drawerWidth : 0;
+
   return (
     <Drawer
       variant="permanent"
       sx={{
-        width: drawerWidth,
-
+        width: currentWidth,
+        flexShrink: 0,
+        transition: "width 0.2s",
         "& .MuiDrawer-paper": {
-          width: drawerWidth,
+          width: currentWidth,
+          overflowX: "hidden",
+          transition: "width 0.2s",
           border: "none",
           color: "#fff",
           background:
@@ -56,36 +61,40 @@ export default function Sidebar() {
           ))}
         </List>
 
-        <Divider
-          sx={{
-            my: 3,
-            borderColor: "rgba(255,255,255,.08)",
-          }}
-        />
-
-        <Typography
-          sx={{
-            px: 3,
-            mb: 1,
-            color: "#64748B",
-            fontWeight: 700,
-            fontSize: 12,
-            letterSpacing: 1,
-          }}
-        >
-          MANAGEMENT
-        </Typography>
-
-        <List>
-          {managementItems.map((item) => (
-            <SidebarItem
-              key={item.title}
-              title={item.title}
-              path={item.path}
-              icon={item.icon}
+        {managementItems.length > 0 && (
+          <>
+            <Divider
+              sx={{
+                my: 3,
+                borderColor: "rgba(255,255,255,.08)",
+              }}
             />
-          ))}
-        </List>
+
+            <Typography
+              sx={{
+                px: 3,
+                mb: 1,
+                color: "#64748B",
+                fontWeight: 700,
+                fontSize: 12,
+                letterSpacing: 1,
+              }}
+            >
+              MANAGEMENT
+            </Typography>
+
+            <List>
+              {managementItems.map((item) => (
+                <SidebarItem
+                  key={item.title}
+                  title={item.title}
+                  path={item.path}
+                  icon={item.icon}
+                />
+              ))}
+            </List>
+          </>
+        )}
       </Box>
 
       <Box sx={{ flexGrow: 1 }} />

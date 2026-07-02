@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Box } from "@mui/material";
 import { useSnackbar } from "notistack";
 
@@ -30,6 +31,20 @@ export default function PlaylistsPage() {
   const [devices, setDevices] = useState<Device[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  // ── Router state ─────────────────────────────────────────────────────────
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (location.state?.openCreateDialog) {
+      setEditorTarget(undefined);
+      setEditorOpen(true);
+      
+      // Clear the state so refreshing doesn't reopen the dialog
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location, navigate]);
 
   useEffect(() => {
     fetchData();
@@ -129,7 +144,6 @@ export default function PlaylistsPage() {
       enqueueSnackbar(`Playlist "${savedPlaylist.name}" saved successfully`, { variant: "success" });
       setEditorOpen(false);
     } catch (err: any) {
-      console.error("Error saving playlist:", err);
       enqueueSnackbar(err.message || "Failed to save playlist", { variant: "error" });
     }
   }, [items, enqueueSnackbar]);
@@ -141,8 +155,8 @@ export default function PlaylistsPage() {
       await PlaylistService.deletePlaylist(deleteTarget.id);
       setItems(prev => prev.filter(i => i.id !== deleteTarget.id));
       enqueueSnackbar(`Deleted "${deleteTarget.name}"`, { variant: "success" });
-    } catch (err) {
-      enqueueSnackbar("Failed to delete playlist", { variant: "error" });
+    } catch (err: any) {
+      enqueueSnackbar(err.message || "Failed to delete playlist", { variant: "error" });
     } finally {
       setDeleteTarget(null);
     }

@@ -3,4 +3,4 @@ import type { ScheduleStatus } from "../../types/schedule";
 
 export type SortField = "name" | "startDate" | "priority";
 export type SortDirection = "asc" | "desc";
-export type StatusFilter = "All" | ScheduleStatus;
+export type StatusFilter = "All" | ScheduleStatus | "Conflict";

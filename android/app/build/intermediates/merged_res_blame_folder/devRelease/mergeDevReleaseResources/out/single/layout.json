@@ -1,0 +1,14 @@
+[
+    {
+        "merged": "com.digitalsignage.player.app-mergeDevReleaseResources-3:/layout/dialog_maintenance.xml",
+        "source": "com.digitalsignage.player.app-main-8:/layout/dialog_maintenance.xml"
+    },
+    {
+        "merged": "com.digitalsignage.player.app-mergeDevReleaseResources-3:/layout/activity_splash.xml",
+        "source": "com.digitalsignage.player.app-main-8:/layout/activity_splash.xml"
+    },
+    {
+        "merged": "com.digitalsignage.player.app-mergeDevReleaseResources-3:/layout/activity_playback.xml",
+        "source": "com.digitalsignage.player.app-main-8:/layout/activity_playback.xml"
+    }
+]

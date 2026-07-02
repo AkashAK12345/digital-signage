@@ -22,7 +22,7 @@ class DeviceBase(BaseModel):
     firmwareVersion: Optional[str] = None
 
 class DeviceCreate(DeviceBase):
-    pass
+    id: str
 
 class DeviceUpdate(BaseModel):
     name: Optional[str] = None

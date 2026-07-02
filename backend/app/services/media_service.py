@@ -118,15 +118,22 @@ class MediaService:
 
     @staticmethod
     def delete_media(db: Session, media_id: str) -> bool:
+        from sqlalchemy.exc import IntegrityError
         media = db.query(Media).filter(Media.id == media_id).first()
         if not media:
             return False
             
         file_name = media.originalFile.split("/")[-1]
         path = os.path.join(MediaService.MEDIA_FOLDER, file_name)
+            
+        try:
+            db.delete(media)
+            db.commit()
+        except IntegrityError:
+            db.rollback()
+            raise HTTPException(status_code=409, detail="Cannot delete media because it is referenced by one or more playlists.")
+            
         if os.path.exists(path):
             os.remove(path)
             
-        db.delete(media)
-        db.commit()
         return True

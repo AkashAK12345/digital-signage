@@ -1,0 +1,33 @@
+<variant
+    name="stagingRelease"
+    package="com.digitalsignage.player"
+    minSdkVersion="28"
+    targetSdkVersion="34"
+    shrinking="true"
+    mergedManifest="build\intermediates\merged_manifest\stagingRelease\processStagingReleaseMainManifest\AndroidManifest.xml"
+    manifestMergeReport="build\outputs\logs\manifest-merger-staging-release-report.txt"
+    proguardFiles="build\intermediates\default_proguard_files\global\proguard-android-optimize.txt-8.7.0;proguard-rules.pro"
+    partialResultsDir="build\intermediates\lint_vital_partial_results\stagingRelease\lintVitalAnalyzeStagingRelease\out">
+  <buildFeatures
+      viewBinding="true"
+      namespacing="REQUIRED"/>
+  <sourceProviders>
+    <sourceProvider
+        manifests="src\main\AndroidManifest.xml"
+        javaDirectories="src\main\java;src\staging\java;src\release\java;src\stagingRelease\java;src\main\kotlin;src\staging\kotlin;src\release\kotlin;src\stagingRelease\kotlin"
+        resDirectories="src\main\res;src\staging\res;src\release\res;src\stagingRelease\res"
+        assetsDirectories="src\main\assets;src\staging\assets;src\release\assets;src\stagingRelease\assets"/>
+  </sourceProviders>
+  <testSourceProviders>
+  </testSourceProviders>
+  <testFixturesSourceProviders>
+  </testFixturesSourceProviders>
+  <artifact
+      classOutputs="build\intermediates\javac\stagingRelease\compileStagingReleaseJavaWithJavac\classes;build\tmp\kotlin-classes\stagingRelease;build\kotlinToolingMetadata;build\intermediates\hilt\component_classes\stagingRelease;build\generated\ksp\stagingRelease\resources;build\intermediates\compile_and_runtime_not_namespaced_r_class_jar\stagingRelease\processStagingReleaseResources\R.jar"
+      type="MAIN"
+      applicationId="com.digitalsignage.player.staging"
+      generatedSourceFolders="build\generated\ksp\stagingRelease\java;build\generated\ksp\stagingRelease\kotlin;build\generated\ap_generated_sources\stagingRelease\out;build\generated\source\buildConfig\staging\release;build\generated\data_binding_base_class_source_out\stagingRelease\out"
+      generatedResourceFolders="build\generated\res\resValues\staging\release"
+      desugaredMethodsFiles="C:\Users\akash\.gradle\caches\8.9\transforms\020d272c9dc62cb47e327580dcc04b21\transformed\D8BackportedDesugaredMethods.txt">
+  </artifact>
+</variant>

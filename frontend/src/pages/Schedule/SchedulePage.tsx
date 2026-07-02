@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Box } from "@mui/material";
 import { useSnackbar } from "notistack";
 
@@ -29,6 +30,21 @@ export default function SchedulePage() {
   const [devices, setDevices] = useState<Device[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  // ── Router state ─────────────────────────────────────────────────────────
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (location.state?.openCreateDialog) {
+      setEditorMode("create");
+      setEditorTarget(undefined);
+      setEditorOpen(true);
+      
+      // Clear the state so refreshing doesn't reopen the dialog
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location, navigate]);
 
   useEffect(() => {
     fetchData();
@@ -87,9 +103,13 @@ export default function SchedulePage() {
       const q = search.trim().toLowerCase();
       result = result.filter(i => i.name.toLowerCase().includes(q));
     }
-    if (statusFilter !== "All") result = result.filter(i => i.status === statusFilter);
+    if (statusFilter === "Conflict") {
+      result = result.filter(i => conflictingIds.includes(i.id));
+    } else if (statusFilter !== "All") {
+      result = result.filter(i => i.status === statusFilter);
+    }
     return sortSchedules(result, sortField, sortDirection);
-  }, [items, search, statusFilter, sortField, sortDirection]);
+  }, [items, search, statusFilter, sortField, sortDirection, conflictingIds]);
 
   // ── Handlers ─────────────────────────────────────────────────────────────
   const handleRefresh = useCallback(async () => {
@@ -148,8 +168,8 @@ export default function SchedulePage() {
       }
       enqueueSnackbar(`Schedule "${savedSchedule.name}" saved successfully`, { variant: "success" });
       setEditorOpen(false);
-    } catch (err) {
-      enqueueSnackbar("Failed to save schedule", { variant: "error" });
+    } catch (err: any) {
+      enqueueSnackbar(err.message || "Failed to save schedule", { variant: "error" });
     }
   }, [items, enqueueSnackbar]);
 
@@ -160,8 +180,8 @@ export default function SchedulePage() {
       await ScheduleService.deleteSchedule(deleteTarget.id);
       setItems(prev => prev.filter(i => i.id !== deleteTarget.id));
       enqueueSnackbar(`Deleted "${deleteTarget.name}"`, { variant: "success" });
-    } catch (err) {
-      enqueueSnackbar("Failed to delete schedule", { variant: "error" });
+    } catch (err: any) {
+      enqueueSnackbar(err.message || "Failed to delete schedule", { variant: "error" });
     } finally {
       setDeleteTarget(null);
     }

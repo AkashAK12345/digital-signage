@@ -18,9 +18,16 @@ class DeviceService:
 
     @staticmethod
     def create_device(db: Session, payload: DeviceCreate) -> Device:
-        new_id = f"TV-{uuid.uuid4().hex[:8].upper()}"
+        from fastapi import HTTPException
+        
+        # Verify Device ID uniqueness
+        if db.query(Device).filter(Device.id == payload.id).first():
+            raise HTTPException(
+                status_code=409,
+                detail="A device with this Device ID already exists."
+            )
+            
         device = Device(
-            id=new_id,
             **payload.model_dump()
         )
         db.add(device)
@@ -44,12 +51,23 @@ class DeviceService:
 
     @staticmethod
     def delete_device(db: Session, device_id: str) -> bool:
+        from fastapi import HTTPException
+        from sqlalchemy.exc import IntegrityError
+        
         device = db.query(Device).filter(Device.id == device_id).first()
         if not device:
             return False
-        db.delete(device)
-        db.commit()
-        return True
+            
+        try:
+            db.delete(device)
+            db.commit()
+            return True
+        except IntegrityError:
+            db.rollback()
+            raise HTTPException(
+                status_code=409,
+                detail="Cannot delete device because it is assigned to one or more schedules or playlists."
+            )
 
     @staticmethod
     def calculate_status(heartbeat_at: int) -> str:

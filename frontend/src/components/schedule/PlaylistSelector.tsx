@@ -11,6 +11,12 @@ interface Props {
   disabled?: boolean;
 }
 
+function getPlaylistLabel(p: Playlist): string {
+  if (p.status === "Draft") return `${p.name} (Draft – Cannot be scheduled)`;
+  if (p.status === "Archived") return `${p.name} (Archived – Cannot be scheduled)`;
+  return `${p.name} (${p.items.length} items)`;
+}
+
 export default function PlaylistSelector({ playlists, value, onChange, error, helperText, disabled }: Props) {
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
@@ -30,8 +36,13 @@ export default function PlaylistSelector({ playlists, value, onChange, error, he
       >
         <MenuItem value="" disabled>Select a playlist to schedule</MenuItem>
         {playlists.map(p => (
-          <MenuItem key={p.id} value={p.id}>
-            {p.name} ({p.items.length} items)
+          <MenuItem
+            key={p.id}
+            value={p.id}
+            disabled={p.status !== "Published"}
+            sx={p.status !== "Published" ? { color: "#94A3B8", fontStyle: "italic" } : {}}
+          >
+            {getPlaylistLabel(p)}
           </MenuItem>
         ))}
       </TextField>

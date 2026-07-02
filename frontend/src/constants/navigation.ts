@@ -3,10 +3,7 @@ import TvRoundedIcon from "@mui/icons-material/TvRounded";
 import ImageRoundedIcon from "@mui/icons-material/ImageRounded";
 import PlaylistPlayRoundedIcon from "@mui/icons-material/PlaylistPlayRounded";
 import EventRoundedIcon from "@mui/icons-material/EventRounded";
-import AnalyticsRoundedIcon from "@mui/icons-material/AnalyticsRounded";
-import PeopleRoundedIcon from "@mui/icons-material/PeopleRounded";
-import SettingsRoundedIcon from "@mui/icons-material/SettingsRounded";
-import FactCheckRoundedIcon from "@mui/icons-material/FactCheckRounded";
+// Removed unused icons
 
 import type { SvgIconComponent } from "@mui/icons-material";
 
@@ -47,30 +44,5 @@ export const navigationItems: NavigationItem[] = [
     path: "/schedule",
     icon: EventRoundedIcon,
     section: "main",
-  },
-  {
-    title: "Analytics",
-    path: "/analytics",
-    icon: AnalyticsRoundedIcon,
-    section: "main",
-  },
-
-  {
-    title: "Users",
-    path: "/users",
-    icon: PeopleRoundedIcon,
-    section: "management",
-  },
-  {
-    title: "Settings",
-    path: "/settings",
-    icon: SettingsRoundedIcon,
-    section: "management",
-  },
-  {
-    title: "Audit Logs",
-    path: "/audit",
-    icon: FactCheckRoundedIcon,
-    section: "management",
   },
 ];

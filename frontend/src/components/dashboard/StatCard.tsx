@@ -1,144 +1,98 @@
-import { Box, Typography } from "@mui/material";
-import type { SvgIconComponent } from "@mui/icons-material";
+import type { ReactNode } from "react";
+import { Box, Paper, Typography } from "@mui/material";
 
-import TrendingUpRoundedIcon from "@mui/icons-material/TrendingUpRounded";
-
-import {
-  Area,
-  AreaChart,
-  ResponsiveContainer,
-} from "recharts";
-
-import DashboardCard from "../common/DashboardCard";
-
-interface Props {
+interface StatCardProps {
   title: string;
-  value: number;
+  value: number | string;
+  icon: ReactNode;
   color: string;
-  icon: SvgIconComponent;
-  trend: string;
-  trendColor: string;
+  subtitle?: string;
+  onClick?: () => void;
 }
-
-const chartData = [
-  { value: 30 },
-  { value: 45 },
-  { value: 42 },
-  { value: 70 },
-  { value: 60 },
-  { value: 82 },
-];
 
 export default function StatCard({
   title,
   value,
+  icon,
   color,
-  icon: Icon,
-  trend,
-  trendColor,
-}: Props) {
+  subtitle,
+  onClick,
+}: StatCardProps) {
   return (
-    <DashboardCard>
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-        }}
-      >
-        <Box>
-          <Box
-            sx={{
-              width: 58,
-              height: 58,
-              borderRadius: 4,
-              background: color,
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              color: "#fff",
-              mb: 2,
-              boxShadow: `0 10px 25px ${color}40`,
-            }}
-          >
-            <Icon sx={{ fontSize: 30 }} />
-          </Box>
+    <Paper
+      elevation={0}
+      onClick={onClick}
+      sx={{
+        p: 3,
+        borderRadius: "16px",
+        border: "1px solid #EEF2F7",
+        bgcolor: "#FFFFFF",
+        boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
+        transition: "all .25s ease",
+        cursor: onClick ? "pointer" : "default",
 
+        "&:hover": {
+          transform: "translateY(-4px)",
+          boxShadow: "0 18px 40px rgba(15,23,42,0.10)",
+        },
+      }}
+    >
+      <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
+        {/* Icon circle */}
+        <Box
+          sx={{
+            width: 52,
+            height: 52,
+            minWidth: 52,
+            borderRadius: "50%",
+            bgcolor: `${color}26`, // 15% opacity hex
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            color,
+          }}
+        >
+          {icon}
+        </Box>
+
+        {/* Content */}
+        <Box sx={{ flex: 1, minWidth: 0 }}>
           <Typography
             sx={{
               color: "#64748B",
-              fontSize: 14,
+              fontSize: 13,
+              fontWeight: 600,
+              letterSpacing: 0.2,
             }}
           >
             {title}
           </Typography>
 
           <Typography
-            variant="h4"
             sx={{
               fontWeight: 700,
-              mt: 1,
+              fontSize: 28,
+              lineHeight: 1.2,
+              mt: 0.5,
             }}
           >
-            {value.toLocaleString()}
+            {typeof value === "number" ? value.toLocaleString() : value}
           </Typography>
 
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              mt: 2,
-            }}
-          >
-            <TrendingUpRoundedIcon
-              sx={{
-                color: trendColor,
-                fontSize: 18,
-                mr: .5,
-              }}
-            />
-
-            <Typography
-              sx={{
-                color: trendColor,
-                fontWeight: 700,
-                fontSize: 13,
-                mr: 1,
-              }}
-            >
-              {trend}
-            </Typography>
-
+          {subtitle && (
             <Typography
               sx={{
                 color: "#94A3B8",
-                fontSize: 13,
+                fontSize: 12,
+                fontWeight: 400,
+                mt: 0.5,
               }}
             >
-              this week
+              {subtitle}
             </Typography>
-          </Box>
-        </Box>
-
-        <Box
-          sx={{
-            width: 90,
-            height: 70,
-          }}
-        >
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={chartData}>
-              <Area
-                dataKey="value"
-                stroke={color}
-                strokeWidth={3}
-                fill={color}
-                fillOpacity={0.15}
-                type="monotone"
-              />
-            </AreaChart>
-          </ResponsiveContainer>
+          )}
         </Box>
       </Box>
-    </DashboardCard>
+    </Paper>
   );
 }
